@@ -15,15 +15,14 @@
 <script setup>
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
-import MapBoundsManager from '@/Hooks/MapBoundsManager ';
+import useBoundaryLayer from '@/Hooks/MapBoundsManager';
 
 import { onMounted } from 'vue';
 
-const { boundsInit } = MapBoundsManager()
-
+const { layerInit } = useBoundaryLayer()
 
 onMounted(() => {
-  boundsInit();
+  layerInit()
 })
 
 
