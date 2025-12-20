@@ -29,52 +29,50 @@ export default {
     container.setAttribute('style', 'width: 100%; height: 100%')
     document.body.appendChild(container)
 
+    const TIAN_DI_TU = '57613e03f2408b1d2243a49588aa57e0'
+    console.log(TIAN_DI_TU);
+
+
     const map = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/mapbox/satellite-v9',
+      style: {
+        version: 8,
+        sources: {
+          'tdt-satellite': {
+            type: 'raster',
+            tiles: [
+              `http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${TIAN_DI_TU}`
+            ],
+            tileSize: 256,
+          },
+          'tdt-label': {
+            type: 'raster',
+            tiles: [
+              `http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${TIAN_DI_TU}`
+            ],
+            tileSize: 256,
+          }
+        },
+        layers: [
+          {
+            id: 'tdt-satellite-layer',
+            type: 'raster',
+            source: 'tdt-satellite',
+            minzoom: 0,
+            maxzoom: 20
+          },
+          {
+            id: 'tdt-label-layer',
+            type: 'raster',
+            source: 'tdt-label',
+            minzoom: 0,
+            maxzoom: 20
+          }
+        ]
+      },
       center: [116, 28.5],
       zoom: 6,
       projection: 'globe',
-    })
-    map.on('style.load', () => {
-      map.setFog({})
-
-      // 消除边界
-      map.setFilter("admin-0-boundary-disputed", [
-        "all",
-        ["==", ["get", "disputed"], "true"],
-        ["==", ["get", "admin_level"], 0],
-        ["==", ["get", "maritime"], "false"],
-        ["match", ["get", "worldview"], ["all", "CN"], true, false],
-      ]);
-      map.setFilter("admin-0-boundary", [
-        "all",
-        ["==", ["get", "admin_level"], 0],
-        ["==", ["get", "disputed"], "false"],
-        ["==", ["get", "maritime"], "false"],
-        ["match", ["get", "worldview"], ["all", "CN"], true, false],
-      ]);
-      map.setFilter("admin-0-boundary-bg", [
-        "all",
-        ["==", ["get", "admin_level"], 0],
-        ["==", ["get", "maritime"], "false"],
-        ["match", ["get", "worldview"], ["all", "CN"], true, false],
-      ]);
-      // 删除标注图层
-      const layersToRemove = [
-        'water-name',      // 水域名称
-        'waterway-label',  // 河流标注
-        'natural-label',   // 自然特征标注
-        'settlement-label',// 定居点标注
-        'road-label',      // 道路标注
-        'poi-label',       // 兴趣点标注
-      ];
-
-      layersToRemove.forEach(layerId => {
-        if (map.getLayer(layerId)) {
-          map.removeLayer(layerId);
-        }
-      });
     })
 
     const scene = new Scene({

@@ -8,21 +8,33 @@
 <template>
   <div>
     <MapControl />
-    <BottomTools />
+    <BottomTools @toggleCharts="toggleCharts" />
+    <G2Charts v-if="displayChart" />
   </div>
 </template>
 
 <script setup>
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
-import useBoundaryLayer from '@/Hooks/MapBoundsManager';
+import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
+import G2Charts from '../../G2Charts/G2Charts.vue';
 
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 
-const { layerInit } = useBoundaryLayer()
+
+const { layerInitialize } = useBoundaryLayer()
+
+
+
+
+
+const displayChart = ref(true)
+const toggleCharts = (isDisplay) => {
+  displayChart.value = isDisplay
+}
 
 onMounted(() => {
-  layerInit()
+  layerInitialize()
 })
 
 

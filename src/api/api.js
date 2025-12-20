@@ -10,16 +10,70 @@
 import request from './request'
 
 export const JiangXiBoundsApi = {
-  getBounds: (id) => {
-    return request({
-      url: `/${id}_full.json`,
-      method: 'GET',
-    })
+
+  getAreaByName: (name, level) => {
+    const cityAdcodeMap = {
+      // 省级
+      '江西省': '360000',
+      '江西': '360000',
+
+      // 地级市
+      '南昌市': '360100',
+      '南昌': '360100',
+      '景德镇市': '360200',
+      '景德镇': '360200',
+      '萍乡市': '360300',
+      '萍乡': '360300',
+      '九江市': '360400',
+      '九江': '360400',
+      '新余市': '360500',
+      '新余': '360500',
+      '鹰潭市': '360600',
+      '鹰潭': '360600',
+      '赣州市': '360700',
+      '赣州': '360700',
+      '吉安市': '360800',
+      '吉安': '360800',
+      '宜春市': '360900',
+      '宜春': '360900',
+      '抚州市': '361000',
+      '抚州': '361000',
+      '上饶市': '361100',
+      '上饶': '361100'
+    };
+    const code = cityAdcodeMap[name] || '360000'
+    switch (level) {
+      case 0:
+        return request.create('https://geo.datav.aliyun.com/areas_v3/bound')({
+          url: `/360000_full.json`,
+          method: 'GET',
+        })
+      case 1:
+        return request.create('https://geo.datav.aliyun.com/areas_v3/bound')({
+          url: `/${code}_full.json`,
+          method: 'GET',
+        })
+      case 2:
+        return request({
+          url: `getXianBoundary_full?xian=${name}`,
+          method: 'GET'
+        })
+      case 3:
+        return request({
+          url: `getZhenBoundary_full?zhen=${name}`,
+          method: 'GET'
+        })
+      case 4:
+        return request({
+          url: `getCunBoundary?cun=${name}`,
+          method: 'GET'
+        })
+    }
   },
-  getVillageBounds: (id) => {
+  getFieldByName: (name) => {
     return request({
-      url: `/${id}.json`,
-      method: 'GET',
+      url: `zaodaoShapfile?city=抚州&cun=${name}`,
+      method: 'GET'
     })
   }
 };

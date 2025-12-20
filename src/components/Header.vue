@@ -12,7 +12,7 @@
       <p>{{ date }}</p>
       <p>{{ time }}</p>
     </div>
-    <div class="title">江西师范大学智慧农业展示平台</div>
+    <div class="title">智慧农业展示平台</div>
 
     <div class="login-button ">
       <div class="icon">
@@ -51,13 +51,13 @@ const time = currentTime.toTimeString().split(' ')[0];
   z-index: 3;
   text-align: center;
   line-height: 82px;
-  font-size: 30px;
+  font-size: 3rem;
   color: #00b7ff;
   font-family: clockicons, sans-serif, Georgia, Times, 'Times New Roman', serif;
 }
 
 .timer {
-  font-size: 24px;
+  font-size: 1.5rem;
   position: absolute;
   left: 3rem;
   top: 1.2rem;
@@ -73,7 +73,7 @@ const time = currentTime.toTimeString().split(' ')[0];
 
 .title {
   margin-top: .7rem;
-  font-size: 36px;
+  font-size: 3rem;
   font-weight: bold;
 
 }

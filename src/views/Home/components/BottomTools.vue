@@ -15,15 +15,28 @@
           </button>
           <p>边界显示</p>
         </div>
+        <div class="item">
+          <button class="toggle-btn" @click="toggleCharts">
+            <i class="iconfont icon-supervision-full"></i>
+          </button>
+          <p>控制中心</p>
+        </div>
       </div>
     </template>
   </Footer>
+
 </template>
 
 <script setup>
+import { ref, defineEmits } from 'vue'
 import Footer from '@/components/Footer.vue';
 
-
+const emit = defineEmits(["toggleCharts"]);
+const showCharts = ref(true);
+const toggleCharts = () => {
+  showCharts.value = !showCharts.value;
+  emit('toggleCharts', showCharts.value);
+};
 
 
 
