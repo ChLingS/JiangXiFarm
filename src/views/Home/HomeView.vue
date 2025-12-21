@@ -17,14 +17,20 @@
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
+import useFieldLayer from '@/Hooks/MapFieldManager'
 import G2Charts from '../../G2Charts/G2Charts.vue';
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 
-const { layerInitialize } = useBoundaryLayer()
+const { layerInitialize, AD_NAMES } = useBoundaryLayer()
 
+watch(AD_NAMES, (newVal) => {
+  console.log('AD_NAMES changed:', newVal)
+}, { deep: true })  // 添加 deep: true 以确保能监听到数组内部变化
 
+// 初始化田块图层，传入 AD_NAMES
+const { layerInitialize: initFieldLayer } = useFieldLayer(AD_NAMES);
 
 
 
@@ -35,6 +41,8 @@ const toggleCharts = (isDisplay) => {
 
 onMounted(() => {
   layerInitialize()
+  // 初始化田块图层
+  initFieldLayer();
 })
 
 

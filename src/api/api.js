@@ -44,13 +44,13 @@ export const JiangXiBoundsApi = {
     const code = cityAdcodeMap[name] || '360000'
     switch (level) {
       case 0:
-        return request.create('https://geo.datav.aliyun.com/areas_v3/bound')({
-          url: `/360000_full.json`,
+        return request({
+          url: `/api/geojson/full/360000`,
           method: 'GET',
         })
       case 1:
-        return request.create('https://geo.datav.aliyun.com/areas_v3/bound')({
-          url: `/${code}_full.json`,
+        return request({
+          url: `/api/geojson/full/${code}`,
           method: 'GET',
         })
       case 2:

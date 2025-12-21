@@ -13,7 +13,9 @@
     <div class="g2-right">
       <div class="g2-chart" style="height:35%">
         <div class="people-sum">田块数据</div>
+        <div>
 
+        </div>
       </div>
       <div class="g2-chart" style="height:12%">
         <div class="people-sum">在线人员</div>
@@ -51,12 +53,17 @@
 <script setup>
 import { ColumnChart, RoseChart } from "@opd/g2plot-vue";
 
+// import { defineProps } from "vue";
+
 /* 出行人口 */
 import { useLeftTop } from '@/Hooks/useLeftTop';
 import { useLeftBottom } from '@/Hooks/useLeftBottom'
 const { config, data } = useLeftTop();
 const { bus_config, bus_data } = useLeftBottom();
 
+// let areaData = defineProps()=>{
+
+// }
 
 
 </script>
