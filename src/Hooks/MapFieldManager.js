@@ -350,18 +350,6 @@ export default (adNamesRef) => {  // 接收 AD_NAMES 作为参数
 
         // 设置点击事件
         setupFieldClickEvents();
-
-        // 可选：调整视图以显示所有田块
-        if (featuresWithId.length > 0) {
-          const bounds = turf.bbox(fieldData);
-          if (bounds && bounds.every(coord => !isNaN(coord))) {
-            map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], {
-              padding: 50,
-              duration: 1000
-            });
-          }
-        }
-
         console.log('田块数据加载完成');
       }
     } catch (error) {
@@ -369,7 +357,6 @@ export default (adNamesRef) => {  // 接收 AD_NAMES 作为参数
       clearFieldData();
     }
   };
-
   const layerInitialize = async () => {
     // 监听 AD_NAMES 的变化
     watch(adNamesRef, (newVal) => {
