@@ -84,5 +84,6 @@ export default {
     })
     // 在app中通过provide提供scene和map对象
     app.provide('$scene_map', { scene, map })
+
   },
 }

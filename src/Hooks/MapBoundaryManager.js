@@ -33,7 +33,7 @@ export default () => {
           features: []
         }
       });
-    }
+    };
 
     if (!map.getLayer(FILL_LAYER_ID)) {
       map.addLayer({
@@ -45,7 +45,7 @@ export default () => {
           'fill-opacity': 0
         }
       });
-    }
+    };
 
     if (!map.getLayer(OUTLINE_LAYER_ID)) {
       map.addLayer({
@@ -58,9 +58,9 @@ export default () => {
           'line-opacity': 1
         }
       });
-    }
-
+    };
   }
+
   const updateLayerData = async (areaData) => {
     const source = map.getSource(SOURCE_ID);
     if (source) {

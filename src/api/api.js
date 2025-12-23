@@ -75,5 +75,11 @@ export const JiangXiBoundsApi = {
       url: `zaodaoShapfile?city=抚州&cun=${name}`,
       method: 'GET'
     })
+  },
+  getContractedLandByName: (name) => {
+    return request({
+      url: `${name}`,
+      method: 'GET'
+    })
   }
 };
