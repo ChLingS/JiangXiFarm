@@ -1,25 +1,32 @@
-import { inject, ref } from 'vue'
+import { inject } from 'vue'
 
 import { JiangXiBoundsApi } from '@/api/api'
 import * as turf from '@turf/turf'
 
 
 
-export default (adNamesRef) => {
+export default () => {
   const { map } = inject('$scene_map')
+
 
   const SOURCE_CONTRACTED_ID = 'poloygon-contracted-data-source'
   const FILL_CONTRACTED_LAYER_ID = 'polygon-contracted-fill-layer'
   const OUTLINE_CONTRACTED_LAYER_ID = 'polygon-contracted-outline-layer';
 
-  let currentPopup = null;
+  // 添加回调函数引用
+  let onFeatureClickCallback = null
+
+  // 设置回调函数的方法
+  const setOnFeatureClick = (callback) => {
+    onFeatureClickCallback = callback
+  }
+
   let currentHighlightedFeatureId = null;
   let currentClickListener = null;  // 用于田块的点击事件
 
-  const fetchContractedLand = async () => {
-    const loadContractedLandName = adNamesRef.value.at(-1);
+  const fetchContractedLand = async (contractedLandName) => {
     try {
-      const contractedLandData = await JiangXiBoundsApi.getAreaByName(loadContractedLandName)
+      const contractedLandData = await JiangXiBoundsApi.getFieldByName(contractedLandName)
       return contractedLandData
     } catch (error) {
       console.error('获取边界数据失败:', error)
@@ -44,11 +51,11 @@ export default (adNamesRef) => {
         type: 'fill',
         source: SOURCE_CONTRACTED_ID,
         paint: {
-          'fill-color': '#DBDBDB',
-          'fill-opacity': 0
+          'fill-color': '#7cfc00',  // 固定颜色，不再使用高亮
+          'fill-opacity': 0.2,
         }
       });
-    };
+    }
 
     if (!map.getLayer(OUTLINE_CONTRACTED_LAYER_ID)) {
       map.addLayer({
@@ -56,56 +63,73 @@ export default (adNamesRef) => {
         type: 'line',
         source: SOURCE_CONTRACTED_ID,
         paint: {
-          'line-color': '#fbff00',
-          'line-width': 4,
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'highlighted'], false],
+            '#ff0000',  // 高亮时轮廓线颜色 - 红色
+            '#fce700'   // 正常时轮廓线颜色 - 黄色
+          ],
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'highlighted'], false],
+            3,  // 高亮时轮廓线宽度
+            1   // 正常时轮廓线宽度
+          ],
           'line-opacity': 1
         }
       });
-    };
+    }
   }
+
+
+
   const updateLayerData = async (areaData) => {
     const source = map.getSource(SOURCE_CONTRACTED_ID);
     if (source) {
+      const featuresWithIds = areaData.features.map(feature => ({
+        ...feature,
+        id: feature.id || feature.properties?.id || `field_${index}_${Date.now()}`
+      }));
       source.setData({
         type: 'FeatureCollection',
-        features: areaData.features
+        features: featuresWithIds
       });
+      // 设置点击事件
+      setupClickEvents();
     }
   };
 
   function clearHighlight() {
     if (currentHighlightedFeatureId !== null) {
+
       map.setFeatureState({
         source: SOURCE_CONTRACTED_ID,
         id: currentHighlightedFeatureId
-      },
-        { highlighted: false })
+      }, { highlighted: false });
+
+      currentHighlightedFeatureId = null;
     }
-    currentHighlightedFeatureId = null;
   }
 
   function highlightFeature(feature) {
-    console.log('准备高亮要素:', feature);
-    clearHighlight();
-    const featureId = feature.id || feature.properties?.id;
+    const featureId = feature.id;
     if (!featureId) {
-      console.warn('要素没有ID，无法高亮', feature);
       return;
     }
-
-    console.log('高亮要素ID:', featureId);
-
     if (currentHighlightedFeatureId === featureId) {
-      console.log('要素已高亮，跳过');
       return;
     }
+
+    // 清除之前的高亮
+    clearHighlight();
+
+    // 设置新的高亮
     map.setFeatureState({
       source: SOURCE_CONTRACTED_ID,
       id: featureId
-    },
-      { highlighted: true })
+    }, { highlighted: true });
     // 记录高亮ID
-    currentHighlightedFeatureId = featureId
+    currentHighlightedFeatureId = featureId;
   };
 
   const setupClickEvents = () => {
@@ -117,7 +141,6 @@ export default (adNamesRef) => {
       const point = e.point;
       console.log('点击坐标:', point);
 
-      // 行政区事件
       let contractedLandFeatures = [];
       try {
         contractedLandFeatures = map.queryRenderedFeatures(point, {
@@ -129,13 +152,19 @@ export default (adNamesRef) => {
       }
       if (contractedLandFeatures.length > 0) {
         const clickedFeature = contractedLandFeatures[0]
-        const featureId = clickedFeature.id || clickedFeature.properties?.id;
+        const featureId = clickedFeature.id;
 
         const isSameFeature = currentHighlightedFeatureId === featureId;
 
         if (!isSameFeature) {
           clearHighlight();
         }
+
+        // 触发回调函数
+        if (onFeatureClickCallback && clickedFeature.properties) {
+          onFeatureClickCallback(clickedFeature.properties)
+        }
+
         highlightFeature(clickedFeature)
 
       }
@@ -145,4 +174,15 @@ export default (adNamesRef) => {
     currentClickListener = clickHandler;
   };
 
+  const contractedLandLayerInitialize = async (adNamesRef) => {
+    const areaData = await fetchContractedLand(adNamesRef.at(-1))
+    loadContractedLand();
+    updateLayerData(areaData)
+
+  }
+
+  return {
+    contractedLandLayerInitialize,
+    setOnFeatureClick
+  }
 }

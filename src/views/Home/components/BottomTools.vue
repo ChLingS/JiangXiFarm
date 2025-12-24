@@ -1,8 +1,8 @@
 <!--
- * @Author: wangshiyang
- * @Date: 2023-05-29 15:45:15
+ * @Author: ChLingS
+ * @Date: 2025-12-21 15:45:15
  * @LastEditors: your name
- * @LastEditTime: 2023-11-17 10:44:56
+ * @LastEditTime: 2025-12-24 10:44:56
  * @Description: 请填写简介
 -->
 <template>
@@ -10,10 +10,20 @@
     <template v-slot:toggle>
       <div class="btn-groups">
         <div class="item">
-          <button class="toggle-btn">
-            <i class="iconfont icon-tubiaozhizuomoban"></i>
-          </button>
-          <p>边界显示</p>
+          <!-- 将面板移到按钮容器内部，添加relative定位 -->
+          <div class="layer-panel-container" v-if="showLayerPanel">
+            <div class="panel">
+              <div v-for="el in layerSelect" :key="el.id" class="panel-item">
+                <el-checkbox v-model="el.checked">{{ el.label }}</el-checkbox>
+              </div>
+            </div>
+          </div>
+          <div class="btn-container">
+            <button class="toggle-btn" @click="showLayerPanel = !showLayerPanel">
+              <i class="iconfont icon-tubiaozhizuomoban"></i>
+            </button>
+            <p>边界显示</p>
+          </div>
         </div>
         <div class="item">
           <button class="toggle-btn" @click="toggleCharts">
@@ -24,25 +34,37 @@
       </div>
     </template>
   </Footer>
-
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, watch, computed } from 'vue'
 import Footer from '@/components/Footer.vue';
 
-const emit = defineEmits(["toggleCharts"]);
+
+const emit = defineEmits(["layerSelectStatus", "toggleCharts"]);
+
+let showLayerPanel = ref(false)
+const layerSelect = ref([
+  { id: 'contractLand', label: '保全低空', checked: true },
+  { id: 'originLand', label: '勾勒低空', checked: true },
+  { id: 'other-plots', label: '其他地块', checked: false }
+])
+emit('layerSelectStatus', layerSelect.value)
+// 监听layerStatus的变化
+watch(layerSelect, (newVal) => {
+  emit('layerSelectStatus', newVal)
+}, { deep: true })
+
+
 const showCharts = ref(true);
 const toggleCharts = () => {
   showCharts.value = !showCharts.value;
   emit('toggleCharts', showCharts.value);
 };
 
-
-
 </script>
 
-<style>
+<style scoped>
 .btn-groups {
   display: flex;
   color: #fff;
@@ -56,12 +78,17 @@ const toggleCharts = () => {
 .btn-groups .item {
   margin-left: 20px;
   text-align: center;
+  position: relative; /* 为.item添加相对定位 */
+}
+
+.btn-container {
+  position: relative;
+  display: inline-block;
 }
 
 .btn-groups button {
   margin-bottom: 4px;
   font-size: 8px;
-  /* padding: 5px; */
   width: 40px;
   height: 40px;
   border: none;
@@ -69,8 +96,6 @@ const toggleCharts = () => {
   outline: none;
   color: #fff;
   background: #53697670;
-  /* fallback for old browsers */
-  /* Chrome 10-25, Safari 5.1-6 */
   box-shadow: 0 0 5px 3px #333;
   background: linear-gradient(to bottom, rgba(0, 128, 255, 0.377), rgba(0, 128, 255, 0.281));
 }
@@ -78,5 +103,59 @@ const toggleCharts = () => {
 .btn-groups button:hover {
   cursor: pointer;
   background: linear-gradient(to bottom, rgba(0, 128, 255, 0.6), rgba(0, 128, 255, 0.281));
+}
+
+/* 面板容器样式 */
+.layer-panel-container {
+  position: absolute;
+  bottom: 100%; /* 将面板定位在按钮上方 */
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px); /* 水平居中，并稍微向上偏移 */
+  z-index: 1000;
+  min-width: 120px;
+}
+
+/* 面板主体样式 */
+.panel {
+  background-color: rgba(51, 51, 51, 0.9);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 8px;
+}
+
+/* 面板项样式 */
+.panel-item {
+  padding: 6px 8px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-item:last-child {
+  border-bottom: none;
+}
+
+/* 面板下方的三角形箭头 */
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgba(51, 51, 51, 0.9) transparent transparent transparent;
+}
+
+/* 修复el-checkbox的样式（如果需要） */
+:deep(.el-checkbox__label) {
+  color: #fff;
+  font-size: 12px;
+}
+
+:deep(.el-checkbox) {
+  display: flex;
+  align-items: center;
 }
 </style>

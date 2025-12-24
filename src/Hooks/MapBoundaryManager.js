@@ -1,13 +1,15 @@
-import { inject, ref } from 'vue'
+import { inject, ref, computed } from 'vue'
 
 import { JiangXiBoundsApi } from '@/api/api'
 import * as turf from '@turf/turf'
 
-export default () => {
+export default (adNamesRef) => {
   const { map } = inject('$scene_map')
-  const AD_NAMES = ref(['江西省'])
 
-  let currentClickListener = null;
+  // block
+  let isLoading = false
+
+  let currentClickListener = ref(null);
   const SOURCE_ID = 'polygon-data-source';
   const FILL_LAYER_ID = 'polygon-fill-layer';
   const OUTLINE_LAYER_ID = 'polygon-outline-layer';
@@ -15,7 +17,7 @@ export default () => {
 
   const fetchBoundaryDataByName = async (name) => {
     try {
-      const response = await JiangXiBoundsApi.getAreaByName(name, AD_NAMES.value.length - 1)
+      const response = await JiangXiBoundsApi.getAreaByName(name, adNamesRef.value.length - 1)
       return response
     } catch (error) {
       console.error('获取边界数据失败:', error)
@@ -53,7 +55,7 @@ export default () => {
         type: 'line',
         source: SOURCE_ID,
         paint: {
-          'line-color': '#fbff00',
+          'line-color': '#fff68d',
           'line-width': 4,
           'line-opacity': 1
         }
@@ -76,7 +78,7 @@ export default () => {
         padding: 20
       });
     } else if (areaData.features[0]?.properties?.center) {
-      const level = AD_NAMES.value.length;
+      const level = adNamesRef.value.length;
       const zoom = Math.min(7 + level, 12);
       map.flyTo({
         center: areaData.features[0].properties.center,
@@ -87,9 +89,42 @@ export default () => {
     return areaData;
   };
 
+  const removeClickListener = () => {
+    if (currentClickListener.value) {
+      map.off('click', currentClickListener.value)
+      currentClickListener.value = null
+    }
+  }
+
+  const clickController = {
+    // 方法
+    enable: () => {
+      if (!currentClickListener.value) {
+        setupClickEvents();
+      }
+    },
+    disable: () => {
+      if (currentClickListener.value) {
+        removeClickListener();
+      }
+    },
+    toggle: () => {
+      if (currentClickListener.value) {
+        removeClickListener();
+      } else {
+        setupClickEvents();
+      }
+    },
+    // 状态
+    isEnabled: computed(() => !!currentClickListener.value),
+    // 监听器引用
+    listener: currentClickListener,
+  };
+
+
   const setupClickEvents = () => {
-    if (currentClickListener) {
-      map.off('click', currentClickListener);
+    if (currentClickListener.value) {
+      map.off('click', currentClickListener.value);
     }
 
     const clickHandler = async (e) => {
@@ -109,42 +144,43 @@ export default () => {
 
       // 点击到的是要素图层
       if (features.length > 0) {
-        if (AD_NAMES.value.length > 4) {
+        if (adNamesRef.value.length > 4) {
           console.log('已达到最大层级');
         }
         // 行政区变化
         else {
           console.log('点击行政区:', features[0].properties);
           const nextAreaName = features[0].properties.name;
-          AD_NAMES.value.push(nextAreaName);
+          adNamesRef.value.push(nextAreaName);
           let nextAreaData = await fetchBoundaryDataByName(nextAreaName);
           updateLayerData(nextAreaData);
         }
       }
       // 点击到图层外侧
       else {
-        if (AD_NAMES.value.length == 1) {
+        if (adNamesRef.value.length == 1) {
           console.log("已经为省级图层");
         } else {
-          AD_NAMES.value.pop();
-          const lastAreaName = AD_NAMES.value.at(-1);
+          adNamesRef.value.pop();
+          const lastAreaName = adNamesRef.value.at(-1);
           let lastAreaData = await fetchBoundaryDataByName(lastAreaName);
           updateLayerData(lastAreaData);
         }
       }
     };
     map.on('click', clickHandler);
-    currentClickListener = clickHandler;
+    currentClickListener.value = clickHandler;
   };
 
   const layerInitialize = async () => {
-    const areaName = AD_NAMES.value[AD_NAMES.value.length - 1];
+    const areaName = adNamesRef.value[adNamesRef.value.length - 1];
     const areaData = await fetchBoundaryDataByName(areaName);
     if (!areaData) return;
 
     initializeLayers();
     updateLayerData(areaData);
-    setupClickEvents();
+
+    // setupClickEvents();
 
     // 添加地图加载完成后的调试
     map.once('idle', () => {
@@ -154,6 +190,6 @@ export default () => {
 
   return {
     layerInitialize,
-    AD_NAMES
+    clickController,
   };
 };
