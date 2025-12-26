@@ -6,21 +6,16 @@
  * @Description: 请填写简介
 -->
 <template>
+  <Header></Header>
   <div>
+
     <MapControl />
-    <BottomTools 
-      @toggleCharts="toggleCharts" 
-      @layer-select-status="handleLayerStatus"
-      />
-    <G2Charts v-if="displayChart" />
-    <ContractLandDetail
-      v-if="showDetail"
-      :featureProperties="selectedFeature"
-      :visible="showDetail"
-      @close="showDetail = false"
-      @view-details="handleViewDetails"
-      @edit="handleEdit"
-    />
+    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" />
+
+    <component :is="activeComponent" v-if="activeComponent" />
+
+    <ContractLandDetail v-if="showDetail" :featureProperties="selectedFeature" :visible="showDetail"
+      @close="showDetail = false" @view-details="handleViewDetails" @edit="handleEdit" />
   </div>
 </template>
 
@@ -28,26 +23,34 @@
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
 import ContractLandDetail from './components/ContractLandDetail.vue'
+import Header from './components/Header.vue'
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
-import useFieldLayer from '@/Hooks/MapFieldManager'
+import fieldLayer from '@/Hooks/MapFieldManager'
 import contractedLayer from "@/Hooks/MapContractedLandManager"
-import G2Charts from '../../G2Charts/G2Charts.vue';
+import G2Charts from './components/G2Charts.vue';
+import BusinessOverview from './components/BusinessOverview.vue';
 
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, inject, shallowRef } from 'vue';
+
+const { map } = inject('$scene_map')
 
 const AD_NAMES = ref(['江西省', '抚州市', '南城县', '徐家镇'])
 
-const { layerInitialize, clickController } = useBoundaryLayer( AD_NAMES )
+const { layerInitialize, clickController } = useBoundaryLayer(AD_NAMES)
 
-const {contractedLandLayerInitialize, setOnFeatureClick} = contractedLayer()
+// 保单地块
+const { contractedLandLayerInitialize, setOnFeatureClick } = contractedLayer()
+// 作物地块
+const { fieldLayerInitialize } = fieldLayer();
 
 
 watch(AD_NAMES, (newVal) => {
   console.log('AD_NAMES changed:', newVal.length)
 
-  if( newVal.length === 5 ){
+  if (newVal.length === 5) {
     console.log("开始加载地块");
+    fieldLayerInitialize(newVal)
     contractedLandLayerInitialize(newVal)
   }
 }, { deep: true })  // 添加 deep: true 以确保能监听到数组内部变化
@@ -57,8 +60,8 @@ const showDetail = ref(false)
 const selectedFeature = ref(null)
 
 setOnFeatureClick((properties) => {
-    selectedFeature.value = properties
-    showDetail.value = true
+  selectedFeature.value = properties
+  showDetail.value = true
 })
 
 const handleViewDetails = (properties) => {
@@ -70,21 +73,41 @@ const handleViewDetails = (properties) => {
 
 
 
-// bottom按钮操作
-const handleLayerStatus = (layers) => {
-  console.log('图层状态变化:', layers)
-  // 更新地图或其他操作
-  layers.forEach(layer => {
-    console.log(`图层 ${layer.id}: ${layer.checked ? '显示' : '隐藏'}`)
-  })
+// layer操作
+const handleLayerStatus = (changedLayer) => {
+  if (changedLayer.checked) {
+    changedLayer.id.split('_').forEach(element => {
+      map.setLayoutProperty(element, 'visibility', 'visible');
+    });
+
+  } else {
+    changedLayer.id.split('_').forEach(element => {
+      map.setLayoutProperty(element, 'visibility', 'none');
+    });
+  }
 }
 
 
-
-const displayChart = ref(true)
-const toggleCharts = (isDisplay) => {
-  displayChart.value = isDisplay
+// 切换组件
+const components = {
+  1: G2Charts,
+  // 未来扩展
+  2: BusinessOverview,
+  // 3: MapPanel,
 }
+const activeComponent = shallowRef(components[2])
+
+const handleComponentToggle = (interfaceId) => {
+  const component = components[interfaceId]
+  if (!component) return
+
+  if (activeComponent.value === component) {
+    activeComponent.value = null
+  } else {
+    activeComponent.value = component
+  }
+}
+
 
 onMounted(() => {
   layerInitialize()

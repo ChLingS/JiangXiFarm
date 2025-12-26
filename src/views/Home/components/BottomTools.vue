@@ -14,7 +14,7 @@
           <div class="layer-panel-container" v-if="showLayerPanel">
             <div class="panel">
               <div v-for="el in layerSelect" :key="el.id" class="panel-item">
-                <el-checkbox v-model="el.checked">{{ el.label }}</el-checkbox>
+                <el-checkbox v-model="el.checked" @change="onLayerChange(el)">{{ el.label }}</el-checkbox>
               </div>
             </div>
           </div>
@@ -25,11 +25,21 @@
             <p>边界显示</p>
           </div>
         </div>
+
+
         <div class="item">
-          <button class="toggle-btn" @click="toggleCharts">
+          <button class="toggle-btn" @click="changedInterface(1)">
             <i class="iconfont icon-supervision-full"></i>
           </button>
-          <p>控制中心</p>
+          <p>驾驶舱</p>
+        </div>
+
+
+        <div class="item">
+          <button class="toggle-btn" @click="changedInterface(2)">
+            <i class="iconfont icon-supervision-full"></i>
+          </button>
+          <p>承保业务</p>
         </div>
       </div>
     </template>
@@ -41,27 +51,23 @@ import { ref, defineEmits, watch, computed } from 'vue'
 import Footer from '@/components/Footer.vue';
 
 
-const emit = defineEmits(["layerSelectStatus", "toggleCharts"]);
+const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
 
+// 图层显隐
 let showLayerPanel = ref(false)
 const layerSelect = ref([
-  { id: 'contractLand', label: '保全低空', checked: true },
-  { id: 'originLand', label: '勾勒低空', checked: true },
-  { id: 'other-plots', label: '其他地块', checked: false }
+  { id: 'polygon-contracted-fill-layer_polygon-contracted-outline-layer', label: '保全低空', checked: true },
+  { id: 'polygon-field-fill-layer_polygon-field-outline-layer', label: '勾勒地块', checked: true },
+  // { id: 'other-plots', label: '其他地块', checked: false }
 ])
-emit('layerSelectStatus', layerSelect.value)
-// 监听layerStatus的变化
-watch(layerSelect, (newVal) => {
-  emit('layerSelectStatus', newVal)
-}, { deep: true })
+function onLayerChange(layer) {
+  emit('layerSelectStatus', layer)
+}
 
-
-const showCharts = ref(true);
-const toggleCharts = () => {
-  showCharts.value = !showCharts.value;
-  emit('toggleCharts', showCharts.value);
-};
-
+function changedInterface( interfaceId ){
+  emit('changedInterface', interfaceId)
+}
+ 
 </script>
 
 <style scoped>
@@ -78,7 +84,8 @@ const toggleCharts = () => {
 .btn-groups .item {
   margin-left: 20px;
   text-align: center;
-  position: relative; /* 为.item添加相对定位 */
+  position: relative;
+  /* 为.item添加相对定位 */
 }
 
 .btn-container {
@@ -108,9 +115,11 @@ const toggleCharts = () => {
 /* 面板容器样式 */
 .layer-panel-container {
   position: absolute;
-  bottom: 100%; /* 将面板定位在按钮上方 */
+  bottom: 100%;
+  /* 将面板定位在按钮上方 */
   left: 50%;
-  transform: translateX(-50%) translateY(-10px); /* 水平居中，并稍微向上偏移 */
+  transform: translateX(-50%) translateY(-10px);
+  /* 水平居中，并稍微向上偏移 */
   z-index: 1000;
   min-width: 120px;
 }

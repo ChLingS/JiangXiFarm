@@ -9,7 +9,7 @@
 
 import request from './request'
 
-export const JiangXiBoundsApi = {
+export const JiangXiApi = {
 
   getAreaByName: (name, level) => {
     const cityAdcodeMap = {

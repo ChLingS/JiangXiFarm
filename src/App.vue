@@ -1,15 +1,15 @@
 <template>
-  <Header></Header>
-  <router-view v-slot="{ Component }">
+
+  <RouterView v-slot="{ Component }">
     <keep-alive>
       <component :is="Component" />
     </keep-alive>
-  </router-view>
+  </RouterView>
 </template>
 <script setup>
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { RouterView } from 'vue-router'
-import Header from './components/Header.vue'
+
 </script>
 <style>
 #nav {

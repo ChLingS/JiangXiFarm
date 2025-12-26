@@ -1,6 +1,6 @@
 import { inject } from 'vue'
 
-import { JiangXiBoundsApi } from '@/api/api'
+import { JiangXiApi } from '@/api/api'
 import * as turf from '@turf/turf'
 
 
@@ -26,7 +26,7 @@ export default () => {
 
   const fetchContractedLand = async (contractedLandName) => {
     try {
-      const contractedLandData = await JiangXiBoundsApi.getFieldByName(contractedLandName)
+      const contractedLandData = await JiangXiApi.getFieldByName(contractedLandName)
       return contractedLandData
     } catch (error) {
       console.error('获取边界数据失败:', error)

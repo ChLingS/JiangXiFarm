@@ -1,6 +1,6 @@
 import { inject, ref, computed } from 'vue'
 
-import { JiangXiBoundsApi } from '@/api/api'
+import { JiangXiApi } from '@/api/api'
 import * as turf from '@turf/turf'
 
 export default (adNamesRef) => {
@@ -13,11 +13,12 @@ export default (adNamesRef) => {
   const SOURCE_ID = 'polygon-data-source';
   const FILL_LAYER_ID = 'polygon-fill-layer';
   const OUTLINE_LAYER_ID = 'polygon-outline-layer';
+  const TEXT_LAYER_ID = 'polygon-text-layer'
 
 
   const fetchBoundaryDataByName = async (name) => {
     try {
-      const response = await JiangXiBoundsApi.getAreaByName(name, adNamesRef.value.length - 1)
+      const response = await JiangXiApi.getAreaByName(name, adNamesRef.value.length - 1)
       return response
     } catch (error) {
       console.error('获取边界数据失败:', error)
@@ -61,6 +62,28 @@ export default (adNamesRef) => {
         }
       });
     };
+
+    if (!map.getLayer(TEXT_LAYER_ID)) {
+      map.addLayer({
+        id: TEXT_LAYER_ID,
+        type: 'symbol',
+        source: SOURCE_ID,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-size': 14,
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-offset': [0, 0],
+          'text-anchor': 'center',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false
+        },
+        paint: {
+          'text-color': '#ffa600',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 1
+        }
+      });
+    }
   }
 
   const updateLayerData = async (areaData) => {

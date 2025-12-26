@@ -51,7 +51,7 @@ const time = currentTime.toTimeString().split(' ')[0];
   left: 0;
   width: 100%;
   height: 10vh;
-  background-image: url("../assets/images/header.png");
+  background-image: url("@/assets/images/header.png");
   background-size: cover;
   background-position: center center;
   z-index: 3;
