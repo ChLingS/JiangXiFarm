@@ -130,7 +130,7 @@ const handleChange = () => {
   height: auto;
   max-height: 45vh;
   z-index: 3;
-  bottom: 15%;
+  bottom: 6vh;
   left: 20px;
   display: flex;
   flex-direction: column;

@@ -65,7 +65,7 @@ const pieData = reactive([
   height: auto;
   max-height: 45vh;
   z-index: 3;
-  top: 15%;
+  top: 10vh;
   left: 20px;
   display: flex;
   flex-direction: column;
