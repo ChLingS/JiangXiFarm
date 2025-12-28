@@ -71,7 +71,7 @@ function changedInterface(interfaceId) {
   /* bottom: -0.5em; */
   transform: translateX(-50%) rotate(180deg);
   gap: 3em;
-  padding-bottom: 3em;
+  padding-bottom: 1.2vh;
   /* 使用em控制间距 */
 }
 

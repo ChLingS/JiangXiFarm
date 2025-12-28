@@ -128,7 +128,7 @@ const handleChange = () => {
   position: absolute;
   width: 450px;
   height: auto;
-  max-height: 75vh;
+  max-height: 45vh;
   z-index: 3;
   bottom: 15%;
   left: 20px;
