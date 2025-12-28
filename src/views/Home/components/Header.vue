@@ -24,12 +24,6 @@
             fill="#1296db" p-id="6667"></path>
         </svg>
       </div>
-      <button>
-        1
-      </button>
-      <button>
-        2
-      </button>
       <div class="text">
         用户登录
       </div>

@@ -1,16 +1,18 @@
 <template>
   <div>
-    <contractionList @getContraction=handleContractionData></contractionList>
+    <ContractionList @getContraction=handleContractionData></ContractionList>
     <ContractionStatus></ContractionStatus>
+    <AreaSelect></AreaSelect>
   </div>
 </template>
 <script setup>
-import contractionList from '@/components/businessComponents/ContractionList.vue';
+import ContractionList from '@/components/businessComponents/ContractionList.vue';
 import ContractionStatus from '@/components/businessComponents/ContractionStatus.vue';
+import AreaSelect from '@/components/businessComponents/AreaSelect.vue';
 
-const handleContractionData = ( contractionData ) => {
+const handleContractionData = (contractionData) => {
   console.log(contractionData);
-  
+
 }
 
 </script>

@@ -1,16 +1,8 @@
-<!--
- * @Author: ChLingS
- * @Date: 2025-12-21 15:45:15
- * @LastEditors: your name
- * @LastEditTime: 2025-12-24 10:44:56
- * @Description: 请填写简介
--->
 <template>
   <Footer>
     <template v-slot:toggle>
       <div class="btn-groups">
         <div class="item">
-          <!-- 将面板移到按钮容器内部，添加relative定位 -->
           <div class="layer-panel-container" v-if="showLayerPanel">
             <div class="panel">
               <div v-for="el in layerSelect" :key="el.id" class="panel-item">
@@ -20,12 +12,11 @@
           </div>
           <div class="btn-container">
             <button class="toggle-btn" @click="showLayerPanel = !showLayerPanel">
-              <i class="iconfont icon-tubiaozhizuomoban"></i>
+              <i class="iconfont icon-tuceng"></i>
             </button>
-            <p>边界显示</p>
+            <p>图层选择</p>
           </div>
         </div>
-
 
         <div class="item">
           <button class="toggle-btn" @click="changedInterface(1)">
@@ -34,10 +25,9 @@
           <p>驾驶舱</p>
         </div>
 
-
         <div class="item">
           <button class="toggle-btn" @click="changedInterface(2)">
-            <i class="iconfont icon-supervision-full"></i>
+            <i class="iconfont icon-yekuoyewu"></i>
           </button>
           <p>承保业务</p>
         </div>
@@ -47,98 +37,115 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, watch, computed } from 'vue'
+import { ref, defineEmits } from 'vue'
 import Footer from '@/components/Footer.vue';
-
 
 const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
 
-// 图层显隐
 let showLayerPanel = ref(false)
 const layerSelect = ref([
-  { id: 'polygon-contracted-fill-layer_polygon-contracted-outline-layer', label: '保全低空', checked: true },
+  { id: 'polygon-contracted-fill-layer_polygon-contracted-outline-layer', label: '耘智保地块', checked: true },
   { id: 'polygon-field-fill-layer_polygon-field-outline-layer', label: '勾勒地块', checked: true },
-  // { id: 'other-plots', label: '其他地块', checked: false }
 ])
+
 function onLayerChange(layer) {
   emit('layerSelectStatus', layer)
 }
 
-function changedInterface( interfaceId ){
+function changedInterface(interfaceId) {
   emit('changedInterface', interfaceId)
 }
- 
 </script>
 
 <style scoped>
+/* 设置根元素字体大小，作为em的基础 */
+:root {
+  font-size: 16px;
+}
+
 .btn-groups {
   display: flex;
   color: #fff;
   position: absolute;
   left: 50%;
-  font-size: 8px !important;
-  bottom: -4px;
+  /* bottom: -0.5em; */
   transform: translateX(-50%) rotate(180deg);
+  gap: 3em;
+  padding-bottom: 3em;
+  /* 使用em控制间距 */
 }
 
 .btn-groups .item {
-  margin-left: 20px;
   text-align: center;
   position: relative;
-  /* 为.item添加相对定位 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .btn-container {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .btn-groups button {
-  margin-bottom: 4px;
-  font-size: 8px;
-  width: 40px;
-  height: 40px;
+  margin-bottom: 0.5em;
+  width: 3em;
+
+  height: 3em;
+
   border: none;
   border-radius: 50%;
   outline: none;
   color: #fff;
+  font-size: 1.5em;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #53697670;
-  box-shadow: 0 0 5px 3px #333;
+  box-shadow: 0 0 0.4em 0.25em #333;
   background: linear-gradient(to bottom, rgba(0, 128, 255, 0.377), rgba(0, 128, 255, 0.281));
+  transition: all 0.3s ease;
 }
 
 .btn-groups button:hover {
   cursor: pointer;
   background: linear-gradient(to bottom, rgba(0, 128, 255, 0.6), rgba(0, 128, 255, 0.281));
+  transform: scale(1.05);
 }
 
 /* 面板容器样式 */
 .layer-panel-container {
   position: absolute;
   bottom: 100%;
-  /* 将面板定位在按钮上方 */
   left: 50%;
-  transform: translateX(-50%) translateY(-10px);
-  /* 水平居中，并稍微向上偏移 */
+  transform: translateX(-50%) translateY(-0.625em);
   z-index: 1000;
-  min-width: 120px;
+  min-width: 9em;
+  /* 调整面板宽度 */
 }
 
 /* 面板主体样式 */
 .panel {
   background-color: rgba(51, 51, 51, 0.9);
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 0.5em;
+  padding: 0.75em;
+  box-shadow: 0 0.25em 0.75em rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 8px;
+  margin-bottom: 0.5em;
 }
 
 /* 面板项样式 */
 .panel-item {
-  padding: 6px 8px;
+  padding: 0.5em 0.6em;
+  /* 增加内边距 */
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 1em;
+  /* 增大面板文字大小 */
 }
 
 .panel-item:last-child {
@@ -152,19 +159,81 @@ function changedInterface( interfaceId ){
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 8px;
+  border-width: 0.6em;
+  /* 增大箭头 */
   border-style: solid;
   border-color: rgba(51, 51, 51, 0.9) transparent transparent transparent;
 }
 
-/* 修复el-checkbox的样式（如果需要） */
+.item p {
+  font-size: 1.1em;
+  /* 增大下方文字大小 */
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 500;
+  /* 增加一点字重 */
+}
+
+/* 修复el-checkbox的样式 */
 :deep(.el-checkbox__label) {
   color: #fff;
-  font-size: 12px;
+  font-size: 1em;
+  /* 增大复选框文字 */
 }
 
 :deep(.el-checkbox) {
   display: flex;
   align-items: center;
+}
+
+/* 确保图标在按钮内居中并适当放大 */
+.toggle-btn .iconfont {
+  display: block;
+  font-size: 1.8em;
+  /* 增大图标大小 */
+  line-height: 1;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .btn-groups {
+    gap: 1.2em;
+  }
+
+  .btn-groups button {
+    width: 3.8em;
+    height: 3.8em;
+    font-size: 1.5em;
+  }
+
+  .item p {
+    font-size: 0.9em;
+  }
+
+  .toggle-btn .iconfont {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-groups {
+    gap: 1em;
+  }
+
+  .btn-groups button {
+    width: 3.2em;
+    height: 3.2em;
+    font-size: 1.2em;
+  }
+
+  .item p {
+    font-size: 0.8em;
+  }
+
+  .toggle-btn .iconfont {
+    font-size: 1.2em;
+  }
 }
 </style>

@@ -1,7 +1,6 @@
 import { inject } from 'vue'
 
 import { JiangXiApi } from '@/api/api'
-import * as turf from '@turf/turf'
 
 
 
@@ -88,7 +87,7 @@ export default () => {
     if (source) {
       const featuresWithIds = areaData.features.map(feature => ({
         ...feature,
-        id: feature.id || feature.properties?.id || `field_${index}_${Date.now()}`
+        id: feature.id || feature.properties?.id || `field_${Date.now()}`
       }));
       source.setData({
         type: 'FeatureCollection',

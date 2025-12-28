@@ -26,4 +26,14 @@ import { RouterView } from 'vue-router'
   width: 100vw;
   height: 100vh;
 }
+
+.el-select__wrapper.el-tooltip__trigger {
+  background-color: #1B2638;
+}
+
+
+.el-select__wrapper.el-tooltip__trigger {
+  box-shadow: none;
+  border: none
+}
 </style>
