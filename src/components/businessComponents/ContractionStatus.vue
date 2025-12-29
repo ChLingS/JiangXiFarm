@@ -23,24 +23,39 @@
         </div>
         <div class="chart-container">
           <PieChart :data="pieData" :angleField="'value'" :colorField="'type'" :radius="0.8" :innerRadius="0.4"
-            :width="400" :height="300" :label="{
+            :width="pieWidth" :height="pieHeight" :label="{
               type: 'outer',
               content: '{name} {percentage}',
               style: {
                 fill: '#ffffff',
-                fontSize: 16,
+                fontSize: 12,
                 fontWeight: 'bold',
                 textShadow: '0 2px 4px rgba(0,0,0,0.8)',
               }
             }" :legend="{
-              position: 'bottom',
-              itemName: {
-                style: {
-                  fill: '#e0e0e0',
-                  fontSize: 14,
-                }
-              }
-            }" :color="['#4F9DFF', '#FF6B6B']" />
+        position: 'bottom',
+        itemName: {
+          style: {
+            fill: '#e0e0e0',
+            fontSize: 8,
+          }
+        }
+      }" :color="['#4F9DFF', '#FF6B6B']"
+      :statistic="{
+        title:{
+          style:{
+            // fill: '#e0e0e0',
+            fontSize: 12,
+          },
+        },
+        content:{
+          style:{
+            // fill: '#e0e0e0',
+            fontSize: 16,
+            fontWeight: 'bold',
+          },
+        }
+      }" />
         </div>
       </div>
     </transition>
@@ -48,14 +63,32 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { PieChart } from "@opd/g2plot-vue";
+
+let pieWidth = ref(230);
+let pieHeight = ref(170);
+onMounted(() => {
+  const updateDimensions = () => {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      pieWidth.value = 180;
+      pieHeight.value = 140;
+    } else {
+      pieWidth.value = 300; 
+      pieHeight.value = 270;
+    }
+  };  
+  updateDimensions();
+  window.addEventListener('resize', updateDimensions);
+});
 
 const isCollapsed = ref(false);
 const pieData = reactive([
   { type: '大户', value: 75 },
   { type: '散户', value: 25 }
 ]);
+
 </script>
 
 <style scoped>
