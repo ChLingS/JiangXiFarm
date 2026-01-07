@@ -1,25 +1,39 @@
 import { inject, ref, computed } from 'vue'
 
-import { JiangXiApi } from '@/api/api'
+import apiRegistry from '@/api/apiRegistry'
+
 import * as turf from '@turf/turf'
 
-export default (adNamesRef) => {
+
+/** * 管理地图边界图层的Hook
+ * @param {Ref<Array<string>>} adNamesRef - 行政区名称数组的响应式引用
+ * @param {string} apiName - 用于获取边界数据的API名称
+ * @param {Object} layerParams - 传递给API的其他参数
+ */
+export default (adNamesRef, apiName, layerParams) => {
   const { map } = inject('$scene_map')
+
+
 
   // block
   let isLoading = false
 
   let currentClickListener = ref(null);
-  const SOURCE_ID = 'polygon-data-source';
-  const FILL_LAYER_ID = 'polygon-fill-layer';
-  const OUTLINE_LAYER_ID = 'polygon-outline-layer';
-  const TEXT_LAYER_ID = 'polygon-text-layer'
+  const SOURCE_ID = layerParams.sourceId || 'admin-boundary-source';
+  const FILL_LAYER_ID = layerParams.fillLayerId || 'polygon-fill-layer';
+  const OUTLINE_LAYER_ID = layerParams.outlineLayerId || 'polygon-outline-layer';
+  const TEXT_LAYER_ID = layerParams.textLayerId || 'polygon-text-layer';
 
 
   const fetchBoundaryDataByName = async (name) => {
     try {
-      const response = await JiangXiApi.getAreaByName(name, adNamesRef.value.length - 1)
-      return response
+      const response = await apiRegistry.execute(apiName, name, adNamesRef.value.length - 1)
+      if (response.success) {
+        return response.data
+      } else {
+        console.error('获取边界数据失败:', response.error)
+        return null
+      }
     } catch (error) {
       console.error('获取边界数据失败:', error)
       return null

@@ -24,20 +24,30 @@ import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
 import ContractLandDetail from './components/ContractLandDetail.vue'
 import Header from './components/Header.vue'
+import G2Charts from './components/G2Charts.vue';
+import BusinessOverview from './components/BusinessOverview.vue';
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
 import fieldLayer from '@/Hooks/MapFieldManager'
 import contractedLayer from "@/Hooks/MapContractedLandManager"
-import G2Charts from './components/G2Charts.vue';
-import BusinessOverview from './components/BusinessOverview.vue';
+
+import layerConfig from '@/config/layerConfig.json'
+
 
 import { ref, onMounted, watch, inject, shallowRef } from 'vue';
 
 const { map } = inject('$scene_map')
 
+// 图层管理
 const AD_NAMES = ref(['江西省', '抚州市', '南城县', '徐家镇'])
 
-const { layerInitialize, clickController } = useBoundaryLayer(AD_NAMES)
+// 加载边界图层
+// 获取配置中的API名称
+const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
+const apiName = baseLayer ? baseLayer.apiName : 'getAreaByName'
+const baseLayerParams = baseLayer ? baseLayer.layerParams : {}
+console.log('Base Layer Params:', baseLayerParams);
+const { layerInitialize, clickController } = useBoundaryLayer(AD_NAMES, apiName, baseLayerParams);
 
 // 保单地块
 const { contractedLandLayerInitialize, setOnFeatureClick } = contractedLayer()

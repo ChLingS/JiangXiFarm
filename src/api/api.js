@@ -83,3 +83,10 @@ export const JiangXiApi = {
     })
   }
 };
+
+import apiRegistry from './apiRegistry.js'
+
+// 注册API到注册表
+apiRegistry.register('getAreaByName', JiangXiApi.getAreaByName);
+apiRegistry.register('getFieldByName', JiangXiApi.getFieldByName);
+apiRegistry.register('getContractedLandByName', JiangXiApi.getContractedLandByName);
