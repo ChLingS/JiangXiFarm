@@ -1,0 +1,5 @@
+- [ ] 1. 将``MapBoundaryManager.js``中的所有点击相关事件抽离。
+- [ ] 2. 将``MapBoundaryManager.js``中的update方法暴露给``LayerClickEventHandl.js``中，以便其可以通过该函数将点击事件和图层刷新联系起来。
+- [ ] 3. 完善config
+- [ ] 4. 将上述对``MapBoundaryManager.js``文件的操作移植到其他图层文件中。
+- [ ] 5. 完善读写逻辑保证对行政区的读写不会出现condition race的情况

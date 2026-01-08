@@ -14,6 +14,9 @@ export default (areaMgr, apiName, layerParams) => {
   const { map } = inject('$scene_map')
 
   // block
+  let isLoading = false
+
+  let currentClickListener = ref(null);
   const SOURCE_ID = layerParams.sourceId;
   const FILL_LAYER_ID = layerParams.fillLayerId;
   const OUTLINE_LAYER_ID = layerParams.outlineLayerId ;
@@ -122,6 +125,87 @@ export default (areaMgr, apiName, layerParams) => {
     return areaData;
   };
 
+  const removeClickListener = () => {
+    if (currentClickListener.value) {
+      map.off('click', currentClickListener.value)
+      currentClickListener.value = null
+    }
+  }
+
+  const clickController = {
+    // 方法
+    enable: () => {
+      if (!currentClickListener.value) {
+        setupClickEvents();
+      }
+    },
+    disable: () => {
+      if (currentClickListener.value) {
+        removeClickListener();
+      }
+    },
+    toggle: () => {
+      if (currentClickListener.value) {
+        removeClickListener();
+      } else {
+        setupClickEvents();
+      }
+    },
+    // 状态
+    isEnabled: computed(() => !!currentClickListener.value),
+    // 监听器引用
+    listener: currentClickListener,
+  };
+
+  const setupClickEvents = () => {
+    if (currentClickListener.value) {
+      map.off('click', currentClickListener.value);
+    }
+
+    const clickHandler = async (e) => {
+      const point = e.point;
+
+      // 行政区事件
+      let features = [];
+      try {
+        features = map.queryRenderedFeatures(point, {
+          layers: [FILL_LAYER_ID, OUTLINE_LAYER_ID]
+        });
+      } catch (err) {
+        console.warn('在查询地图要素时出错:', err);
+        return;
+      }
+
+      // 点击到的是要素图层
+      if (features.length > 0) {
+        if (areaMgr.getLength() > 4) {
+          console.log('已达到最大层级');
+        }
+        // 行政区变化
+        else {
+          console.log('点击行政区:', features[0]);
+          const nextAreaName = features[0].properties.name;
+          await areaMgr.push(nextAreaName);
+          let nextAreaData = await fetchBoundaryDataByName(nextAreaName);
+          updateLayerData(nextAreaData);
+        }
+      }
+      // 点击到图层外侧
+      else {
+        if (areaMgr.getLength() == 1) {
+          console.log("已经为省级图层");
+        } else {
+          console.log("触发上升事件，重绘边界");
+          await areaMgr.popLast();
+          const lastAreaName = areaMgr.toNames().at(-1);
+          let lastAreaData = await fetchBoundaryDataByName(lastAreaName);
+          updateLayerData(lastAreaData);
+        }
+      }
+    };
+    map.on('click', clickHandler);
+    currentClickListener.value = clickHandler;
+  };
 
   const layerInitialize = async () => {
     const areaName = areaMgr.toNames()[areaMgr.getLength() - 1];
@@ -130,6 +214,9 @@ export default (areaMgr, apiName, layerParams) => {
 
     initializeLayers();
     updateLayerData(areaData);
+
+    // setupClickEvents();
+
     // 添加地图加载完成后的调试
     map.once('idle', () => {
       console.log('地图加载完成，图层列表:', map.getStyle().layers);
@@ -138,5 +225,6 @@ export default (areaMgr, apiName, layerParams) => {
 
   return {
     layerInitialize,
+    clickController,
   };
 };

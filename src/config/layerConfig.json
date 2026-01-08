@@ -2,14 +2,14 @@
     "layers": [
         {
             "id": "baseLayer",
-            "layerParams": [
+            "layerParams": 
                 {
                     "sourceId": "polygon-data-source",
                     "fillLayerId": "polygon-fill-layer",
                     "outlineLayerId": "polygon-outline-layer",
                     "textLayerId": "polygon-text-layer"
                 }
-            ],
+            ,
             "visible": true,
             "zIndex": 0,
             "apiName": "getAreaByName",

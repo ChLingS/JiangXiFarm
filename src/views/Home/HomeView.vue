@@ -28,51 +28,42 @@ import G2Charts from './components/G2Charts.vue';
 import BusinessOverview from './components/BusinessOverview.vue';
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
-import fieldLayer from '@/Hooks/MapFieldManager'
-import contractedLayer from "@/Hooks/MapContractedLandManager"
+// import fieldLayer from '@/Hooks/MapFieldManager'
+// import contractedLayer from "@/Hooks/MapContractedLandManager"
 
 import layerConfig from '@/config/layerConfig.json'
 
 
 import { ref, onMounted, watch, inject, shallowRef } from 'vue';
+import AreaQueryManager from '@/models/AreaQueryManager'
 
 const { map } = inject('$scene_map')
 
-// 图层管理
-const AD_NAMES = ref(['江西省', '抚州市', '南城县', '徐家镇'])
+// 图层管理 — 使用 AreaQueryManager 以避免并发竞争
+/** @type {import('@/models/AreaQueryManager').default} */
+const areaMgr = new AreaQueryManager(['江西省', '抚州市', '南城县', '徐家镇'])
 
 // 加载边界图层
 // 获取配置中的API名称
 const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
 const apiName = baseLayer ? baseLayer.apiName : 'getAreaByName'
-const baseLayerParams = baseLayer ? baseLayer.layerParams : {}
+const baseLayerParams = baseLayer ? baseLayer.layerParams : {} 
 console.log('Base Layer Params:', baseLayerParams);
-const { layerInitialize, clickController } = useBoundaryLayer(AD_NAMES, apiName, baseLayerParams);
+const { layerInitialize, clickController } = useBoundaryLayer(areaMgr, apiName, baseLayerParams);
 
 // 保单地块
-const { contractedLandLayerInitialize, setOnFeatureClick } = contractedLayer()
+// const { contractedLandLayerInitialize, setOnFeatureClick } = contractedLayer()
 // 作物地块
-const { fieldLayerInitialize } = fieldLayer();
+// const { fieldLayerInitialize } = fieldLayer();
 
 
-watch(AD_NAMES, (newVal) => {
-  console.log('AD_NAMES changed:', newVal.length)
+// const showDetail = ref(false)
+// const selectedFeature = ref(null)
 
-  if (newVal.length === 5) {
-    console.log("开始加载地块");
-    fieldLayerInitialize(newVal)
-    contractedLandLayerInitialize(newVal)
-  }
-}, { deep: true })  // 添加 deep: true 以确保能监听到数组内部变化
-
-
-const showDetail = ref(false)
-const selectedFeature = ref(null)
-
-setOnFeatureClick((properties) => {
-  selectedFeature.value = properties
-  showDetail.value = true
-})
+// setOnFeatureClick((properties) => {
+//   selectedFeature.value = properties
+//   showDetail.value = true
+// })
 
 const handleViewDetails = (properties) => {
   console.log('查看完整详情:', properties)
