@@ -43,27 +43,27 @@ export const JiangXiApi = {
     };
     const code = cityAdcodeMap[name] || '360000'
     switch (level) {
-      case 0:
+      case 1:
         return request({
           url: `/api/geojson/full/360000`,
           method: 'GET',
         })
-      case 1:
+      case 2:
         return request({
           url: `/api/geojson/full/${code}`,
           method: 'GET',
         })
-      case 2:
+      case 3:
         return request({
           url: `getXianBoundary_full?xian=${name}`,
           method: 'GET'
         })
-      case 3:
+      case 4:
         return request({
           url: `getZhenBoundary_full?zhen=${name}`,
           method: 'GET'
         })
-      case 4:
+      case 5:
         return request({
           url: `getCunBoundary?cun=${name}`,
           method: 'GET'

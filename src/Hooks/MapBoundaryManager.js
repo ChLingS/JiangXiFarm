@@ -16,13 +16,15 @@ export default (areaMgr, apiName, layerParams) => {
   // block
   const SOURCE_ID = layerParams.sourceId;
   const FILL_LAYER_ID = layerParams.fillLayerId;
-  const OUTLINE_LAYER_ID = layerParams.outlineLayerId ;
-  const TEXT_LAYER_ID = layerParams.textLayerId ;
+  const OUTLINE_LAYER_ID = layerParams.outlineLayerId;
+  const TEXT_LAYER_ID = layerParams.textLayerId;
 
 
   const fetchBoundaryDataByName = async (name) => {
     try {
-      const response = await apiRegistry.execute(apiName, name, areaMgr.getLength() - 1)
+      console.log('请求边界数据，名称:', name);
+      console.log('传递给API的参数:', areaMgr.getLength())
+      const response = await apiRegistry.execute(apiName, name, areaMgr.getLength())
       if (response.success) {
         return response.data
       } else {
@@ -96,40 +98,53 @@ export default (areaMgr, apiName, layerParams) => {
     }
   }
 
-  const updateLayerData = async (areaData) => {
-    const source = map.getSource(SOURCE_ID);
-    if (source) {
-      source.setData({
-        type: 'FeatureCollection',
-        features: areaData.features
-      });
+  /**
+   * 
+   * @param {string} areaName 
+   * @returns 
+   */
+  const updateLayerData = async (areaName) => {
+    try {
+      const areaData = await fetchBoundaryDataByName(areaName);
+      console.log('获取到的边界数据:', areaData);
+      if (!areaData) {
+        console.error('未获取到边界数据');
+        return false;
+      }
+      const source = map.getSource(SOURCE_ID);
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: areaData.features
+        });
+      }
+      // 调整视图
+      const bounds = turf.bbox(areaData);
+      if (bounds) {
+        map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], {
+          padding: 20
+        });
+      } else if (areaData.features[0]?.properties?.center) {
+        const level = areaMgr.getLength();
+        const zoom = Math.min(7 + level, 12);
+        map.flyTo({
+          center: areaData.features[0].properties.center,
+          zoom: zoom,
+          duration: 1000
+        });
+      }
+      return true;
+    } catch (e) {
+      console.error('更新图层数据失败:', e);
+      return false;
     }
-    // 调整视图
-    const bounds = turf.bbox(areaData);
-    if (bounds) {
-      map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], {
-        padding: 20
-      });
-    } else if (areaData.features[0]?.properties?.center) {
-      const level = areaMgr.getLength();
-      const zoom = Math.min(7 + level, 12);
-      map.flyTo({
-        center: areaData.features[0].properties.center,
-        zoom: zoom,
-        duration: 1000
-      });
-    }
-    return areaData;
   };
 
 
   const layerInitialize = async () => {
     const areaName = areaMgr.toNames()[areaMgr.getLength() - 1];
-    const areaData = await fetchBoundaryDataByName(areaName);
-    if (!areaData) return;
-
     initializeLayers();
-    updateLayerData(areaData);
+    updateLayerData(areaName);
     // 添加地图加载完成后的调试
     map.once('idle', () => {
       console.log('地图加载完成，图层列表:', map.getStyle().layers);
@@ -138,5 +153,6 @@ export default (areaMgr, apiName, layerParams) => {
 
   return {
     layerInitialize,
+    updateLayerData
   };
 };

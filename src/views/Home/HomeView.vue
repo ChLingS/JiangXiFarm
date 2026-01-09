@@ -32,6 +32,7 @@ import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
 // import contractedLayer from "@/Hooks/MapContractedLandManager"
 
 import layerConfig from '@/config/layerConfig.json'
+import clickController from '@/Hooks/LayerClickEventHandl';
 
 
 import { ref, onMounted, watch, inject, shallowRef } from 'vue';
@@ -49,13 +50,15 @@ const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
 const apiName = baseLayer ? baseLayer.apiName : 'getAreaByName'
 const baseLayerParams = baseLayer ? baseLayer.layerParams : {} 
 console.log('Base Layer Params:', baseLayerParams);
-const { layerInitialize, clickController } = useBoundaryLayer(areaMgr, apiName, baseLayerParams);
+const { layerInitialize, updateLayerData } = useBoundaryLayer(areaMgr, apiName, baseLayerParams);
 
 // 保单地块
 // const { contractedLandLayerInitialize, setOnFeatureClick } = contractedLayer()
 // 作物地块
 // const { fieldLayerInitialize } = fieldLayer();
 
+
+const { handleLayerClick } = clickController(areaMgr, updateLayerData);
 
 // const showDetail = ref(false)
 // const selectedFeature = ref(null)
@@ -113,7 +116,7 @@ const handleComponentToggle = (interfaceId) => {
 onMounted(() => {
   layerInitialize()
   // // 初始化田块图层
-  clickController.enable()
+  handleLayerClick()
 })
 
 
