@@ -1,9 +1,7 @@
-import { inject, watch, computed } from 'vue'
-import mapboxgl from 'mapbox-gl'
+import { inject } from 'vue'
 import { JiangXiApi } from '@/api/api'
-import * as turf from '@turf/turf'
 
-export default (adNamesRef) => {  // 接收 AD_NAMES 作为参数
+export default () => {  // 接收 AD_NAMES 作为参数
   const { map } = inject('$scene_map')
 
   const SOURCE_FIELD_ID = 'polygon-field-data-source';
@@ -15,7 +13,7 @@ export default (adNamesRef) => {  // 接收 AD_NAMES 作为参数
       const fieldData = await JiangXiApi.getFieldByName(fieldName)
       return fieldData
     } catch (error) {
-      console.error("获取边界失败");
+      console.error("获取边界失败", error);
       return null
     }
   };
@@ -36,7 +34,7 @@ export default (adNamesRef) => {  // 接收 AD_NAMES 作为参数
         type: 'fill',
         source: SOURCE_FIELD_ID,
         paint: {
-          'fill-color': '#ffffe0',  // 固定颜色，不再使用高亮
+          'fill-color': '#ffffe0',
           'fill-opacity': 0.2,
         }
       });
@@ -71,12 +69,12 @@ export default (adNamesRef) => {  // 接收 AD_NAMES 作为参数
     }
   };
 
-  const fieldLayerInitialize = async( adNamesRef ) => {
-    const areaData = await fetchField( adNamesRef.at(-1) )
+  const fieldLayerInitialize = async (adNamesRef) => {
+    const areaData = await fetchField(adNamesRef.at(-1))
     loadField()
     updateLayerData(areaData)
   }
-  return{
+  return {
     fieldLayerInitialize
   }
 };

@@ -2,16 +2,97 @@
     "layers": [
         {
             "id": "baseLayer",
-            "layerParams": 
-                {
-                    "sourceId": "polygon-data-source",
-                    "fillLayerId": "polygon-fill-layer",
-                    "outlineLayerId": "polygon-outline-layer",
-                    "textLayerId": "polygon-text-layer"
-                },
+            "layerParams": {
+                "sourceId": "polygon-data-source",
+                "fillLayerId": "polygon-fill-layer",
+                "outlineLayerId": "polygon-outline-layer",
+                "textLayerId": "polygon-text-layer"
+            },
             "visible": true,
             "zIndex": 0,
             "apiName": "getAreaByName",
+            "clickable": true
+        },
+        {
+            "id": "thematicLayer",
+            "layerParams": {
+                "sourceId": "field-data-source",
+                "fillLayerId": "field-fill-layer",
+                "outlineLayerId": "field-outline-layer"
+            },
+            "layerStyle": {
+                "fillLayerStyle": {
+                    "fill-color": "#ffffe0",
+                    "fill-opacity": 0.2
+                },
+                "outlineLayerStyle": {
+                    "line-color": "#ffe88c",
+                    "line-width": [
+                        "case",
+                        [
+                            "boolean",
+                            [
+                                "feature-state",
+                                "highlighted"
+                            ],
+                            false
+                        ],
+                        3,
+                        1
+                    ],
+                    "line-opacity": 1
+                }
+            },
+            "visible": false,
+            "zIndex": 1,
+            "apiName": "getFieldByName",
+            "clickable": false
+        },
+        {
+            "id": "thematicLayer",
+            "layerParams": {
+                "sourceId": "contract-data-source",
+                "fillLayerId": "contract-fill-layer",
+                "outlineLayerId": "contract-outline-layer"
+            },
+            "layerStyle": {
+                "fillLayerStyle": {
+                    "fill-color": "#7cfc00",
+                    "fill-opacity": 0.2
+                },
+                "outlineLayerStyle": {
+                    "line-color": [
+                        "case",
+                        [
+                            "boolean",
+                            [
+                                "feature-state",
+                                "highlighted"
+                            ],
+                            false
+                        ],
+                        "#ff0000",
+                        "#fce700"
+                    ],
+                    "line-width": [
+                        "case",
+                        [
+                            "boolean",
+                            [
+                                "feature-state",
+                                "highlighted"
+                            ],
+                            false
+                        ],
+                        3,
+                        1
+                    ],
+                    "line-opacity": 1
+                }
+            },
+            "visible": false,
+            "zIndex": 1,
+            "apiName": "getContractedLandByName",
             "clickable": true
         }
     ]

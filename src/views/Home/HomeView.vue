@@ -28,8 +28,8 @@ import G2Charts from './components/G2Charts.vue';
 import BusinessOverview from './components/BusinessOverview.vue';
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
-// import fieldLayer from '@/Hooks/MapFieldManager'
-// import contractedLayer from "@/Hooks/MapContractedLandManager"
+import useThematicLayer from '@/Hooks/MapThematicLayer';
+const { loadThematicLayer, updateThematicLayerData } = useThematicLayer();
 
 import layerConfig from '@/config/layerConfig.json'
 import clickController from '@/Hooks/LayerClickEventHandl';
@@ -37,6 +37,7 @@ import clickController from '@/Hooks/LayerClickEventHandl';
 
 import { ref, onMounted, watch, inject, shallowRef } from 'vue';
 import AreaQueryManager from '@/models/AreaQueryManager'
+import { area } from '@antv/g2plot';
 
 const { map } = inject('$scene_map')
 
@@ -47,18 +48,23 @@ const areaMgr = new AreaQueryManager(['江西省', '抚州市', '南城县', '�
 // 加载边界图层
 // 获取配置中的API名称
 const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
-const apiName = baseLayer ? baseLayer.apiName : 'getAreaByName'
-const baseLayerParams = baseLayer ? baseLayer.layerParams : {} 
+const apiName = baseLayer.apiName
+const baseLayerParams = baseLayer ? baseLayer.layerParams : {}
 console.log('Base Layer Params:', baseLayerParams);
-const { layerInitialize, updateLayerData } = useBoundaryLayer(areaMgr, apiName, baseLayerParams);
-
-// 保单地块
-// const { contractedLandLayerInitialize, setOnFeatureClick } = contractedLayer()
-// 作物地块
-// const { fieldLayerInitialize } = fieldLayer();
+const { layerInitialize, updateBoundaryLayerData } = useBoundaryLayer(areaMgr, apiName, baseLayerParams);
+layerInitialize()
 
 
-const { handleLayerClick } = clickController(areaMgr, updateLayerData);
+// 获取专题图层配置
+const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer')
+for (const layer of thematicLayer) {
+  console.log(`Thematic Layer ID: ${layer.id}, API Name: ${layer.apiName}`);
+  const layerParams = layer.layerParams || {};
+  const layerStyle = layer.layerStyle || {};
+  loadThematicLayer(layerParams, layerStyle)
+}
+// 处理图层点击事件
+const { handleLayerClick } = clickController(areaMgr, updateBoundaryLayerData);
 
 // const showDetail = ref(false)
 // const selectedFeature = ref(null)
@@ -68,13 +74,18 @@ const { handleLayerClick } = clickController(areaMgr, updateLayerData);
 //   showDetail.value = true
 // })
 
-const handleViewDetails = (properties) => {
-  console.log('查看完整详情:', properties)
-  // 这里可以跳转到详情页或打开模态框
-  alert(`查看地块 ${properties.id} 的完整详情`)
-}
+// 加载专题田块图层
 
+watch(() => areaMgr.getLength(), () => {
+  if (areaMgr.getLength() == 5) {
+    for (const layer of thematicLayer) {
+      const layerApiName = layer.apiName
+      const layerParams = layer.layerParams || {};
+      updateThematicLayerData(layerApiName, areaMgr.getCurrent(), layerParams)
+    }
+  }
 
+}, { deep: true })
 
 
 // layer操作
@@ -114,7 +125,7 @@ const handleComponentToggle = (interfaceId) => {
 
 
 onMounted(() => {
-  layerInitialize()
+
   // // 初始化田块图层
   handleLayerClick()
 })

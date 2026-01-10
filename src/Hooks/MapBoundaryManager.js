@@ -1,4 +1,4 @@
-import { inject, ref, computed } from 'vue'
+import { inject } from 'vue'
 
 import apiRegistry from '@/api/apiRegistry'
 
@@ -99,11 +99,11 @@ export default (areaMgr, apiName, layerParams) => {
   }
 
   /**
-   * 
-   * @param {string} areaName 
-   * @returns 
+   *
+   * @param {string} areaName
+   * @returns
    */
-  const updateLayerData = async (areaName) => {
+  const updateBoundaryLayerData = async (areaName) => {
     try {
       const areaData = await fetchBoundaryDataByName(areaName);
       console.log('获取到的边界数据:', areaData);
@@ -144,7 +144,7 @@ export default (areaMgr, apiName, layerParams) => {
   const layerInitialize = async () => {
     const areaName = areaMgr.toNames()[areaMgr.getLength() - 1];
     initializeLayers();
-    updateLayerData(areaName);
+    updateBoundaryLayerData(areaName);
     // 添加地图加载完成后的调试
     map.once('idle', () => {
       console.log('地图加载完成，图层列表:', map.getStyle().layers);
@@ -153,6 +153,6 @@ export default (areaMgr, apiName, layerParams) => {
 
   return {
     layerInitialize,
-    updateLayerData
+    updateBoundaryLayerData
   };
 };
