@@ -37,7 +37,6 @@ import clickController from '@/Hooks/LayerClickEventHandl';
 
 import { ref, onMounted, watch, inject, shallowRef } from 'vue';
 import AreaQueryManager from '@/models/AreaQueryManager'
-import { area } from '@antv/g2plot';
 
 const { map } = inject('$scene_map')
 
@@ -110,7 +109,7 @@ const components = {
   2: BusinessOverview,
   // 3: MapPanel,
 }
-const activeComponent = shallowRef(components[2])
+const activeComponent = shallowRef(null)
 
 const handleComponentToggle = (interfaceId) => {
   const component = components[interfaceId]
