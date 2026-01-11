@@ -37,7 +37,6 @@ import clickController from '@/Hooks/LayerClickEventHandl';
 
 import { ref, onMounted, watch, inject, shallowRef } from 'vue';
 import AreaQueryManager from '@/models/AreaQueryManager'
-import { area } from '@antv/g2plot';
 
 const { map } = inject('$scene_map')
 
@@ -81,7 +80,7 @@ watch(() => areaMgr.getLength(), () => {
     for (const layer of thematicLayer) {
       const layerApiName = layer.apiName
       const layerParams = layer.layerParams || {};
-      updateThematicLayerData(layerApiName, areaMgr.getCurrent(), layerParams)
+      updateThematicLayerData(layerApiName, areaMgr.getCurrent().name, layerParams)
     }
   }
 
