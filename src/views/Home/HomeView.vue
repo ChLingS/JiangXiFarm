@@ -117,7 +117,7 @@ const components = {
   2: BusinessOverview,
   // 3: MapPanel,
 }
-const activeComponent = shallowRef(components[2])
+const activeComponent = shallowRef(null)
 
 const handleComponentToggle = (interfaceId) => {
   const component = components[interfaceId]
