@@ -8,3 +8,5 @@
 - [ ] 3. 完善config
 - [ ] 4. 将上述对``MapBoundaryManager.js``文件的操作移植到其他图层文件中。
 - [ ] 5. 完善读写逻辑保证对行政区的读写不会出现condition race的情况
+- [ ] 4. 将上述对``MapBoundaryManager.js``文件的操作移植到其他图层文件中。
+- [ ] 5. 完善读写逻辑保证对行政区的读写不会出现condition race的情况
