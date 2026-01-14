@@ -2,7 +2,7 @@ import { inject } from 'vue'
 
 import apiRegistry from '@/api/apiRegistry'
 
-import * as turf from '@turf/turf'
+import * as turf from '@turf/turf';
 
 /**
  * 管理地图边界图层的Hook
@@ -20,11 +20,9 @@ export default (areaMgr, apiName, layerParams) => {
   const TEXT_LAYER_ID = layerParams.textLayerId;
 
 
-  const fetchBoundaryDataByName = async (name) => {
+  const fetchBoundaryDataByName = async (nameCollection) => {
     try {
-      console.log('请求边界数据，名称:', name);
-      console.log('传递给API的参数:', areaMgr.getLength())
-      const response = await apiRegistry.execute(apiName, name, areaMgr.getLength())
+      const response = await apiRegistry.execute(apiName, nameCollection)
       if (response.success) {
         return response.data
       } else {
@@ -103,21 +101,37 @@ export default (areaMgr, apiName, layerParams) => {
    * @param {string} areaName
    * @returns
    */
-  const updateBoundaryLayerData = async (areaName) => {
+  const updateBoundaryLayerData = async (nameCollection) => {
     try {
-      const areaData = await fetchBoundaryDataByName(areaName);
+      const areaData = await fetchBoundaryDataByName(nameCollection);
       console.log('获取到的边界数据:', areaData);
       if (!areaData) {
         console.error('未获取到边界数据');
         return false;
       }
       const source = map.getSource(SOURCE_ID);
-      if (source) {
-        source.setData({
-          type: 'FeatureCollection',
-          features: areaData.features
-        });
-      }
+      if (!source) return;
+
+      const featuresWithIds = areaData.features.map((orig, idx) => {
+        const maybeId = orig.id ?? orig.properties?.id;
+        const parsedId = Number(maybeId);
+        const id = Number.isFinite(parsedId) && !Number.isNaN(parsedId) ? Math.floor(parsedId) : (Date.now() + idx);
+        const properties = {
+          ...(orig.properties || {}),
+          layerType: 'baseLayer'
+        };
+        return {
+          ...orig,
+          id,
+          properties
+        };
+      });
+
+      source.setData({
+        type: 'FeatureCollection',
+        features: featuresWithIds
+      });
+      
       // 调整视图
       const bounds = turf.bbox(areaData);
       if (bounds) {
@@ -142,9 +156,9 @@ export default (areaMgr, apiName, layerParams) => {
 
 
   const layerInitialize = async () => {
-    const areaName = areaMgr.toNames()[areaMgr.getLength() - 1];
+    const nameCollection = areaMgr.toNames();
     initializeLayers();
-    updateBoundaryLayerData(areaName);
+    updateBoundaryLayerData(nameCollection);
     // 添加地图加载完成后的调试
     map.once('idle', () => {
       console.log('地图加载完成，图层列表:', map.getStyle().layers);

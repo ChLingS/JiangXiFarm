@@ -11,7 +11,7 @@ import request from './request'
 
 export const JiangXiApi = {
 
-  getAreaByName: (name, level) => {
+  getAreaByName: (nameCollection = []) => {
     const cityAdcodeMap = {
       // 省级
       '江西省': '360000',
@@ -41,8 +41,8 @@ export const JiangXiApi = {
       '上饶市': '361100',
       '上饶': '361100'
     };
-    const code = cityAdcodeMap[name] || '360000'
-    switch (level) {
+    const code = cityAdcodeMap[nameCollection.slice(-1)[0]] || '360000'
+    switch (nameCollection.length) {
       case 1:
         return request({
           url: `/api/geojson/full/360000`,
@@ -55,30 +55,30 @@ export const JiangXiApi = {
         })
       case 3:
         return request({
-          url: `getXianBoundary_full?xian=${name}`,
+          url: `getXianBoundary_full?shi=${nameCollection[1]}&xian=${nameCollection[2]}`,
           method: 'GET'
         })
       case 4:
         return request({
-          url: `getZhenBoundary_full?zhen=${name}`,
+          url: `getZhenBoundary_full?shi=${nameCollection[1]}&xian=${nameCollection[2]}&zhen=${nameCollection[3]}`,
           method: 'GET'
         })
       case 5:
         return request({
-          url: `getCunBoundary?cun=${name}`,
+          url: `getCunBoundary?shi=${nameCollection[1]}&xian=${nameCollection[2]}&zhen=${nameCollection[3]}&cun=${nameCollection[4]}`,
           method: 'GET'
         })
     }
   },
-  getFieldByName: (name) => {
+  getFieldByName: (nameCollection) => {
     return request({
-      url: `zaodaoShapfile?city=抚州&cun=${name}`,
+      url: `zaodaoShapfile?city=抚州&cun=${nameCollection[4]}`,
       method: 'GET'
     })
   },
-  getContractedLandByName: (name) => {
+  getContractedLandByName: (nameCollection) => {
     return request({
-      url: `${name}`,
+      url: `getContractedLayer?shi=${nameCollection[1]}&xian=${nameCollection[2]}&zhen=${nameCollection[3]}&cun=${nameCollection[4]}`,
       method: 'GET'
     })
   }

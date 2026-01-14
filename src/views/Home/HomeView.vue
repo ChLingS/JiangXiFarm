@@ -35,14 +35,14 @@ import layerConfig from '@/config/layerConfig.json'
 import clickController from '@/Hooks/LayerClickEventHandl';
 
 
-import { ref, onMounted, watch, inject, shallowRef } from 'vue';
+import { ref, onMounted, watch, inject, shallowRef, onUnmounted } from 'vue';
 import AreaQueryManager from '@/models/AreaQueryManager'
 
 const { map } = inject('$scene_map')
 
 // 图层管理 — 使用 AreaQueryManager 以避免并发竞争
 /** @type {import('@/models/AreaQueryManager').default} */
-const areaMgr = new AreaQueryManager(['江西省', '抚州市', '南城县', '徐家镇'])
+const areaMgr = new AreaQueryManager(['江西省', '宜春市', '丰城市'])
 
 // 加载边界图层
 // 获取配置中的API名称
@@ -63,7 +63,7 @@ for (const layer of thematicLayer) {
   loadThematicLayer(layerParams, layerStyle)
 }
 // 处理图层点击事件
-const { handleLayerClick } = clickController(areaMgr, updateBoundaryLayerData);
+const {initMapClickListener, getLastThematicLayerProps, cleanupMapClickListener} = clickController(areaMgr, updateBoundaryLayerData);
 
 // const showDetail = ref(false)
 // const selectedFeature = ref(null)
@@ -80,9 +80,17 @@ watch(() => areaMgr.getLength(), () => {
     for (const layer of thematicLayer) {
       const layerApiName = layer.apiName
       const layerParams = layer.layerParams || {};
-      updateThematicLayerData(layerApiName, areaMgr.getCurrent().name, layerParams)
+      updateThematicLayerData(layerApiName, areaMgr.toNames(), layerParams)
     }
   }
+  // else{
+  //   for(const layer of thematicLayer){
+  //     const fillLayerId = layer.layerParams.fillLayerId
+  //     const outlineLayerId = layer.layerParams.outlineLayerId
+  //     map.setLayoutProperty(fillLayerId, 'visibility', 'none')
+  //     map.setLayoutProperty(outlineLayerId, 'visibility', 'none')
+  //   }
+  // }
 
 }, { deep: true })
 
@@ -123,11 +131,20 @@ const handleComponentToggle = (interfaceId) => {
 }
 
 
-onMounted(() => {
+const selectedLayer = ref(null);
+onMounted(async () => {
+  if (map) {
+    // 初始化点击监听
+    initMapClickListener((props) => {
+      selectedLayer.value = props;
+      console.log("selectedLayer", selectedLayer.value)
+    });
+  }
+});
 
-  // // 初始化田块图层
-  handleLayerClick()
-})
+onUnmounted(() => {
+  cleanupMapClickListener();
+});
 
 
 </script>
