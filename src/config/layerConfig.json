@@ -57,8 +57,25 @@
             },
             "layerStyle": {
                 "fillLayerStyle": {
-                    "fill-color": "#7cfc00",
-                    "fill-opacity": 0.2
+                    "fill-color": [
+                        "match",
+                        [
+                            "get",
+                            "zs"
+                        ],
+                        1,
+                        "#d9f0a3",
+                        2,
+                        "#78c679",
+                        3,
+                        "#31a354",
+                        4,
+                        "#006837",
+                        5,
+                        "#004529",
+                        "#f7fcf5"
+                    ],
+                    "fill-opacity": 0.3
                 },
                 "outlineLayerStyle": {
                     "line-color": [

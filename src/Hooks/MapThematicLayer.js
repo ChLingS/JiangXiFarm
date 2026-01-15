@@ -60,29 +60,9 @@ export default () => {
     if (newData) {
       const source = map.getSource(SOURCE_ID);
       if (!source) return;
-      const featuresWithIds = newData.features.map((orig, idx) => {
-        const rawId = orig.id ?? orig.properties?.id ?? idx;
-        let id;
-
-        if (typeof rawId === 'string') {
-          if (/^\d+$/.test(rawId)) {
-            // 纯数字长ID：取模压缩
-            const bigInt = BigInt(rawId);
-            id = Number(bigInt % BigInt(2147483647)); // 最大安全整数范围内
-          } else {
-            // 非纯数字字符串：使用哈希
-            let hash = 0;
-            for (let i = 0; i < Math.min(rawId.length, 50); i++) {
-              hash = ((hash << 5) - hash) + rawId.charCodeAt(i);
-              hash |= 0;
-            }
-            id = Math.abs(hash);
-          }
-        } else {
-          id = parseInt(rawId, 10);
-          if (Number.isNaN(id)) id = idx;
-        }
-
+      let featureId = 0;
+      const featuresWithIds = newData.features.map((orig) => {
+        const id = featureId++;
         const properties = {
           ...(orig.properties || {}),
           layerType: 'thematicLayer'

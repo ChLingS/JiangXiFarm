@@ -18,8 +18,8 @@
       <div class="header-left">
         <div class="header-icon">📍</div>
         <div class="header-title">地块详情</div>
-        <div v-if="featureProperties" class="status-badge" :class="getStatusClass(featureProperties.statuses)">
-          {{ getStatusText(featureProperties.statuses) }}
+        <div v-if="featureProperties" class="status-badge status-insured">
+          已投保
         </div>
       </div>
       
@@ -29,7 +29,7 @@
           @click="toggleMinimize"
           :title="isMinimized ? '展开' : '最小化'"
         >
-          {{ isMinimized ? '⬆️' : '⬇️' }}
+          {{ isMinimized ? '⬆' : '⬇' }}
         </button>
         <button 
           class="action-btn close-btn"
@@ -57,6 +57,11 @@
           </div>
           
           <div class="info-row">
+            <span class="info-label">地块编码：</span>
+            <span class="info-value id-value">{{ featureProperties.dkbm }}</span>
+          </div>
+          
+          <div class="info-row">
             <span class="info-label">ID：</span>
             <span class="info-value id-value">{{ featureProperties.id }}</span>
           </div>
@@ -66,25 +71,40 @@
             <span class="info-value highlight">{{ featureProperties.area }}亩</span>
           </div>
           
-          <div v-if="featureProperties.elevation" class="info-row">
-            <span class="info-label">海拔：</span>
-            <span class="info-value">{{ featureProperties.elevation }}m</span>
-          </div>
-          
-          <div v-if="featureProperties.soil_type" class="info-row">
-            <span class="info-label">土壤：</span>
-            <span class="info-value">{{ featureProperties.soil_type }}</span>
-          </div>
-          
-          <div v-if="featureProperties.message && featureProperties.message !== '无'" class="info-row full-row">
-            <span class="info-label">备注：</span>
-            <span class="info-value">{{ featureProperties.message }}</span>
+          <div class="info-row">
+            <span class="info-label">作物：</span>
+            <span class="info-value">{{ featureProperties.zw }}</span>
           </div>
         </div>
         
         <div v-else class="no-data">
           <div class="no-data-icon">📭</div>
           <p>请点击地图上的地块</p>
+        </div>
+      </div>
+      
+      <!-- 投保人信息 -->
+      <div class="info-section">
+        <div class="section-header">
+          <div class="section-icon">👤</div>
+          <h3>投保人信息</h3>
+        </div>
+        
+        <div v-if="featureProperties" class="info-grid">
+          <div class="info-row">
+            <span class="info-label">姓名：</span>
+            <span class="info-value">{{ featureProperties.xm }}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">身份证：</span>
+            <span class="info-value">{{ featureProperties.sfz }}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">手机号：</span>
+            <span class="info-value">{{ featureProperties.sjh }}</span>
+          </div>
         </div>
       </div>
       
@@ -95,41 +115,21 @@
           <h3>保单信息</h3>
         </div>
         
-        <div v-if="insuranceInfo" class="info-grid">
+        <div v-if="featureProperties" class="info-grid">
           <div class="info-row">
             <span class="info-label">保单号：</span>
-            <span class="info-value">{{ insuranceInfo.policyNo }}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">被保险人：</span>
-            <span class="info-value">{{ insuranceInfo.insured }}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">承保时间：</span>
-            <span class="info-value">{{ insuranceInfo.insuredTime }}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">承保面积：</span>
-            <span class="info-value highlight">{{ insuranceInfo.insuredArea }}亩</span>
+            <span class="info-value id-value">{{ featureProperties.bdh }}</span>
           </div>
           
           <div class="info-row">
             <span class="info-label">承保标的：</span>
-            <span class="info-value">{{ insuranceInfo.insuredTarget }}</span>
+            <span class="info-value">{{ featureProperties.zw }}</span>
           </div>
           
           <div class="info-row">
-            <span class="info-label">总保费：</span>
-            <span class="info-value premium">{{ insuranceInfo.premium }}元</span>
+            <span class="info-label">承保面积：</span>
+            <span class="info-value highlight">{{ featureProperties.area }}亩</span>
           </div>
-        </div>
-        
-        <div v-else class="no-data">
-          <div class="no-data-icon">📋</div>
-          <p>暂无保单信息</p>
         </div>
       </div>
       
@@ -146,8 +146,6 @@
     
     <!-- 最小化状态 -->
     <div v-else class="minimized-view" @click="toggleMinimize">
-      <div class="min-icon">📍</div>
-      <div class="min-text">地块详情</div>
       <div v-if="featureProperties" class="min-location">
         {{ featureLocationShort }}
       </div>
@@ -186,53 +184,17 @@ const zIndex = ref(1000)
 // 计算属性
 const featureLocation = computed(() => {
   if (!props.featureProperties) return ''
-  const { shi_12, xian_12, zhen_12, cun } = props.featureProperties
-  return `${shi_12 || ''}${xian_12 || ''}${zhen_12 || ''}${cun || ''}` || '未知位置'
+  const { sheng, shi, xian, zhen, cun } = props.featureProperties
+  return `${sheng || ''}${shi || ''}${xian || ''}${zhen || ''}${cun || ''}` || '未知位置'
 })
 
 const featureLocationShort = computed(() => {
   if (!props.featureProperties) return ''
-  const { xian_12, zhen_12 } = props.featureProperties
-  return `${xian_12 || ''}${zhen_12 || ''}` || '未知位置'
-})
-
-const insuranceInfo = computed(() => {
-  if (!props.featureProperties) return null
-  
-  // 模拟保单数据
-  const insuranceDataMap = {
-    224871: {
-      policyNo: 'PHSQ20243624N00000327',
-      insured: '林建国',
-      insuredTime: '2024-02-03',
-      insuredArea: '600',
-      insuredTarget: '油菜',
-      premium: '7200'
-    },
-    224872: {
-      policyNo: 'PHSQ20243624N00000456',
-      insured: '王建军',
-      insuredTime: '2024-03-15',
-      insuredArea: '450',
-      insuredTarget: '水稻',
-      premium: '5400'
-    }
-  }
-  
-  return insuranceDataMap[props.featureProperties.id] || null
+  const { xian, zhen } = props.featureProperties
+  return `${xian || ''}${zhen || ''}` || '未知位置'
 })
 
 // 方法
-const getStatusText = (status) => {
-  const statusMap = { 0: '未签约', 1: '已签约', 2: '已投保', 3: '已理赔' }
-  return statusMap[status] || '未知'
-}
-
-const getStatusClass = (status) => {
-  const classMap = { 0: 'status-pending', 1: 'status-active', 2: 'status-insured', 3: 'status-claimed' }
-  return classMap[status] || 'status-unknown'
-}
-
 const startDrag = (e) => {
   zIndex.value = 1001
   isDragging.value = true
@@ -311,7 +273,7 @@ onUnmounted(() => {
 <style scoped>
 .tech-card {
   position: fixed;
-  width: 380px;
+  width: 400px;
   background: rgba(18, 25, 45, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(64, 156, 255, 0.3);
@@ -361,28 +323,10 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.status-pending {
-  background: rgba(255, 170, 0, 0.2);
-  color: #ffaa00;
-  border: 1px solid rgba(255, 170, 0, 0.3);
-}
-
-.status-active {
-  background: rgba(0, 200, 83, 0.2);
-  color: #00c853;
-  border: 1px solid rgba(0, 200, 83, 0.3);
-}
-
 .status-insured {
   background: rgba(64, 156, 255, 0.2);
   color: #409cff;
   border: 1px solid rgba(64, 156, 255, 0.3);
-}
-
-.status-claimed {
-  background: rgba(156, 39, 176, 0.2);
-  color: #9c27b0;
-  border: 1px solid rgba(156, 39, 176, 0.3);
 }
 
 .header-actions {
@@ -420,7 +364,7 @@ onUnmounted(() => {
 }
 
 .info-section {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .section-header {
@@ -447,18 +391,13 @@ onUnmounted(() => {
 .info-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .info-row {
   display: flex;
   font-size: 14px;
   line-height: 1.5;
-}
-
-.info-row.full-row {
-  flex-direction: column;
-  gap: 4px;
 }
 
 .info-label {
@@ -486,11 +425,6 @@ onUnmounted(() => {
 
 .highlight {
   color: #00e676;
-  font-weight: 600;
-}
-
-.premium {
-  color: #ff4081;
   font-weight: 600;
 }
 

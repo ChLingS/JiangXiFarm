@@ -65,7 +65,7 @@ for (const layer of thematicLayer) {
 // 处理图层点击事件
 const {initMapClickListener, getLastThematicLayerProps, cleanupMapClickListener} = clickController(areaMgr, updateBoundaryLayerData);
 
-// const showDetail = ref(false)
+
 // const selectedFeature = ref(null)
 
 // setOnFeatureClick((properties) => {
@@ -131,13 +131,15 @@ const handleComponentToggle = (interfaceId) => {
 }
 
 
-const selectedLayer = ref(null);
+const selectedFeature = ref(null);
+const showDetail = ref(false)
 onMounted(async () => {
   if (map) {
     // 初始化点击监听
     initMapClickListener((props) => {
-      selectedLayer.value = props;
-      console.log("selectedLayer", selectedLayer.value)
+      selectedFeature.value = props;
+      console.log("selectedFeature", selectedFeature.value)
+      showDetail.value = true
     });
   }
 });
