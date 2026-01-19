@@ -63,35 +63,24 @@ for (const layer of thematicLayer) {
   loadThematicLayer(layerParams, layerStyle)
 }
 // 处理图层点击事件
-const {initMapClickListener, getLastThematicLayerProps, cleanupMapClickListener} = clickController(areaMgr, updateBoundaryLayerData);
+const {initMapClickListener, 
+      getLastThematicLayerProps, 
+      cleanupMapClickListener} = clickController(areaMgr, layerConfig,
+                                                updateBoundaryLayerData, 
+                                                updateThematicLayerData);
 
 
-// const selectedFeature = ref(null)
-
-// setOnFeatureClick((properties) => {
-//   selectedFeature.value = properties
-//   showDetail.value = true
-// })
 
 // 加载专题田块图层
 
 watch(() => areaMgr.getLength(), () => {
-  if (areaMgr.getLength() == 5) {
-    for (const layer of thematicLayer) {
-      const layerApiName = layer.apiName
-      const layerParams = layer.layerParams || {};
-      updateThematicLayerData(layerApiName, areaMgr.toNames(), layerParams)
-    }
-  }
-  // else{
-  //   for(const layer of thematicLayer){
-  //     const fillLayerId = layer.layerParams.fillLayerId
-  //     const outlineLayerId = layer.layerParams.outlineLayerId
-  //     map.setLayoutProperty(fillLayerId, 'visibility', 'none')
-  //     map.setLayoutProperty(outlineLayerId, 'visibility', 'none')
+  // if (areaMgr.getLength() == 5) {
+  //   for (const layer of thematicLayer) {
+  //     const layerApiName = layer.apiName
+  //     const layerParams = layer.layerParams || {};
+  //     updateThematicLayerData(layerApiName, areaMgr.toNames(), layerParams)
   //   }
   // }
-
 }, { deep: true })
 
 

@@ -4,6 +4,42 @@ import apiRegistry from '@/api/apiRegistry'
 export default () => {
   const { map } = inject('$scene_map');
 
+  // 增加高亮标记
+  let highlightFeatureId = [];
+  let highlightSouceId = null;
+
+  // 清除高亮
+  const clearHighlight = () => {
+    if (highlightFeatureId != null && highlightSouceId) {
+      try {
+        map.setFeatureState({ source: highlightSouceId, id: highlightFeatureId }, { highlighted: false });
+      } catch (err) {
+        console.warn('clearHighlight setFeatureState failed', err);
+      }
+      highlightFeatureId = null;
+      highlightSouceId = null;
+    }
+  };
+
+  // 设置高亮
+  const setHighlight = (feature, sourceId) =>{
+     const fid = feature.id ?? feature.properties?.id;
+    if (!fid) {
+      console.warn('无法为要素设置高亮：找不到 id', feature);
+      return;
+    }
+    // 清除之前的高亮
+    clearHighlight();
+    try {
+      map.setFeatureState({ source: sourceId, id: fid }, { highlighted: true });
+      highlightFeatureId = fid;
+      highlightSouceId = sourceId;
+    } catch (err) {
+      console.warn('setHighlight setFeatureState failed', err);
+    }
+  }
+
+
   const thematicData = async (apiName, areaName) => {
     try {
       console.log('请求专题图数据', apiName);

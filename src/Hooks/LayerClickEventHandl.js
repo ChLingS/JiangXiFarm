@@ -1,5 +1,4 @@
 import { inject } from "vue";
-import layerConfig from '@/config/layerConfig.json';
 
 /**
  * 管理地图图层点击事件的Hook
@@ -7,103 +6,17 @@ import layerConfig from '@/config/layerConfig.json';
  * @param {Function} baseLayerUpDate - 用于更新底图边界数据的函数
  */
 
-export default (areaMgr, baseLayerUpDate) => {
+export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate) => {
   const { map } = inject('$scene_map');
 
   // 防止并发点击导致的竞争条件
   let isProcessing = false;
-
-  // 高亮feature标记
-  let highlightFeatureId = null
-  let highlightSouceId = null
 
   // 地块信息记录
   let thematicLayerProps = null;
 
   // 地图点击监听
   let mapClickListener = null;
-
-  const clearHighlight = () => {
-    if (highlightFeatureId != null && highlightSouceId) {
-      try {
-        map.setFeatureState({ source: highlightSouceId, id: highlightFeatureId }, { highlighted: false });
-
-      } catch (err) {
-        console.warn('clearHighlight setFeatureState failed', err);
-      }
-      highlightFeatureId = null;
-      highlightSouceId = null;
-    }
-  };
-
-  const setHighlight = (feature, sourceId) => {
-    const fid = feature.id ?? feature.properties?.id;
-    if (!fid) {
-      console.warn('无法为要素设置高亮：找不到 id', feature);
-      return;
-    }
-    // 清除之前的高亮
-    clearHighlight();
-    try {
-      map.setFeatureState({ source: sourceId, id: fid }, { highlighted: true });
-      highlightFeatureId = fid;
-      highlightSouceId = sourceId;
-    } catch (err) {
-      console.warn('setHighlight setFeatureState failed', err);
-    }
-  };
-
-  const layers = Array.isArray(layerConfig) ? layerConfig : (layerConfig.layers || []);
-  const layerConfigById = layers.reduce((acc, layer) => {
-    acc[layer.id] = {
-      sourceId: layer.layerParams ? layer.layerParams.sourceId : undefined,
-      fillLayerId: layer.layerParams ? layer.layerParams.fillLayerId : undefined,
-      outlineLayerId: layer.layerParams ? layer.layerParams.outlineLayerId : undefined,
-      textLayerId: layer.layerParams ? layer.layerParams.textLayerId : undefined,
-      zIndex: layer.zIndex,
-      clickable: layer.clickable,
-      layerType: layer.id
-    };
-    return acc;
-  }, {});
-
-  const analyzeLayerClick = (features) => {
-    if (features.length > 0) {
-      // 获取所有匹配的图层配置
-      const matches = features.flatMap(rawFeat => {
-        const layerId = rawFeat.layer?.source ?? rawFeat.source ?? rawFeat.layer?.id;
-        const normalizedFeature = {
-          ...rawFeat,
-          id: rawFeat.properties?.id
-        };
-        console.log("点击的图层ID:", layerId, "feature id:", normalizedFeature.id);
-
-        return Object.entries(layerConfigById)
-          .filter(([, cfg]) => cfg.sourceid === layerId)
-          .map(([configId, cfg]) => ({
-            configId,
-            ...cfg,
-            feature: normalizedFeature
-          }));
-      });
-
-      if (!matches.length) {
-        console.log("点击的图层未能与配置中的图层匹配");
-        return null;
-      }
-
-      // 按 zIndex 降序排序
-      matches.sort((a, b) => (b.zIndex || 0) - (a.zIndex || 0));
-
-      // 返回匹配的要素
-      const { feature, configId } = matches[0];
-      feature.layerConfig = configId;  // 添加配置ID
-      console.log("匹配的图层配置ID:", configId, "对应的要素:", feature);
-      return feature;
-    } else {
-      return null;
-    }
-  };
 
   /**
    * 初始化地图点击事件监听
@@ -125,6 +38,8 @@ export default (areaMgr, baseLayerUpDate) => {
       isProcessing = true;
       thematicLayerProps = null; // 重置之前的结果
 
+
+
       try {
         const features = map.queryRenderedFeatures(e.point);
 
@@ -142,7 +57,7 @@ export default (areaMgr, baseLayerUpDate) => {
 
         // 处理基础行政区划图层
         if (layerType === 'baseLayer') {
-          if (areaMgr.getLength() > 4) {
+          if (areaMgr.getLength() > 5) {
             console.log('已达到最大层级');
             return;
           }
@@ -158,16 +73,24 @@ export default (areaMgr, baseLayerUpDate) => {
           } catch (err) {
             console.error('处理行政区点击时出错:', err);
           }
+          // 将加载专题数据移动到点击事件里
+          if(areaMgr.getLength() == 5){
+            const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer')
+            for (const layer of thematicLayer) {
+              const layerApiName = layer.apiName
+              const layerParams = layer.layerParams || {};
+              thematicLayerUpDate(layerApiName, areaMgr.toNames(), layerParams)
+            }
+          }
           return;
+
         }
 
         // 处理专题图层
         if (layerType === 'thematicLayer') {
           try {
             const props = feature.properties || {};
-            const sourceId = layerConfigById[feature.layerConfig]?.sourceId ??
-              feature.layer?.source ??
-              feature.source;
+            const sourceId = feature.source
 
             if (!sourceId) {
               console.warn('未能找到对应图层的 sourceId', feature.layerConfig);
@@ -178,7 +101,7 @@ export default (areaMgr, baseLayerUpDate) => {
             thematicLayerProps = {
               ...props,
               sourceId,
-              outlineId: props.outlineLayerId ?? layerConfigById[feature.layerConfig]?.outlineLayerId,
+              // outlineId: props.outlineLayerId ?? layerConfigById[feature.layerConfig]?.outlineLayerId,
               geometry: feature.geometry,
               id: feature.id,
               layerId: feature.layer?.id,
@@ -188,7 +111,8 @@ export default (areaMgr, baseLayerUpDate) => {
             console.log('专题图层点击属性:', thematicLayerProps);
 
             // 设置高亮样式
-            setHighlight(feature, sourceId);
+            console.log("传入高亮参数")
+            // setHighlight(feature, sourceId);
 
             // 如果有回调函数，则调用
             if (onThematicLayerClick && typeof onThematicLayerClick === 'function') {

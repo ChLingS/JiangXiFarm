@@ -101,7 +101,9 @@
           {{ locationText }}
         </div>
       </div>
-
+      <div>
+        <LineChart :zsData="zsData"></LineChart>
+      </div>
       <!-- 操作按钮（只保留编辑按钮） -->
       <div v-if="featureProperties" class="action-buttons">
         <button class="btn primary" @click="handleEdit">
@@ -128,7 +130,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, toRefs } from 'vue'
+import LineChart from '@/components/ZsLineChart.vue'
 
 const props = defineProps({
   featureProperties: {
@@ -145,6 +148,7 @@ const props = defineProps({
   }
 })
 
+const { featureProperties } = toRefs(props)
 const emit = defineEmits(['close', 'edit'])
 
 // 响应式数据
@@ -155,10 +159,18 @@ const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 const zIndex = ref(1000)
 
+// 使用计算属性，确保响应式更新
+const zsData = computed(() => {
+  if (!featureProperties.value || !featureProperties.value.zs) {
+    return []
+  }
+  return featureProperties.value.zs
+})
+
 // 计算属性
 const locationText = computed(() => {
-  if (!props.featureProperties) return ''
-  const { sheng, shi, xian, zhen, cun } = props.featureProperties
+  if (!featureProperties.value) return ''
+  const { sheng, shi, xian, zhen, cun } = featureProperties.value
   return [sheng, shi, xian, zhen, cun].filter(Boolean).join('') || ''
 })
 
@@ -174,8 +186,8 @@ const formatPhone = (phone) => {
 }
 
 const getShortLocation = () => {
-  if (!props.featureProperties) return ''
-  const { xian, zhen } = props.featureProperties
+  if (!featureProperties.value) return ''
+  const { xian, zhen } = featureProperties.value
   return `${xian || ''}${zhen || ''}`.slice(0, 8) || '未知'
 }
 
@@ -232,7 +244,7 @@ const handleClose = () => {
 }
 
 const handleEdit = () => {
-  emit('edit', props.featureProperties)
+  emit('edit', featureProperties.value)
 }
 
 // 生命周期
@@ -250,6 +262,7 @@ onUnmounted(() => {
   document.removeEventListener('touchend', stopDrag)
 })
 </script>
+
 
 <style scoped>
 /* 卡片基础样式 */
