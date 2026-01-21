@@ -6,7 +6,8 @@ import { inject } from "vue";
  * @param {Function} baseLayerUpDate - 用于更新底图边界数据的函数
  */
 
-export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate) => {
+export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate, 
+                setHighlight) => {
   const { map } = inject('$scene_map');
 
   // 防止并发点击导致的竞争条件
@@ -80,6 +81,8 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate) => {
               const layerApiName = layer.apiName
               const layerParams = layer.layerParams || {};
               thematicLayerUpDate(layerApiName, areaMgr.toNames(), layerParams)
+              console.log("加载", layerApiName);
+              
             }
           }
           return;
@@ -111,8 +114,7 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate) => {
             console.log('专题图层点击属性:', thematicLayerProps);
 
             // 设置高亮样式
-            console.log("传入高亮参数")
-            // setHighlight(feature, sourceId);
+            setHighlight(feature, sourceId)
 
             // 如果有回调函数，则调用
             if (onThematicLayerClick && typeof onThematicLayerClick === 'function') {

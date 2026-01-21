@@ -29,7 +29,7 @@ import BusinessOverview from './components/BusinessOverview.vue';
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
 import useThematicLayer from '@/Hooks/MapThematicLayer';
-const { loadThematicLayer, updateThematicLayerData } = useThematicLayer();
+const { loadThematicLayer, updateThematicLayerData, setHighlight } = useThematicLayer();
 
 import layerConfig from '@/config/layerConfig.json'
 import clickController from '@/Hooks/LayerClickEventHandl';
@@ -67,7 +67,8 @@ const {initMapClickListener,
       getLastThematicLayerProps, 
       cleanupMapClickListener} = clickController(areaMgr, layerConfig,
                                                 updateBoundaryLayerData, 
-                                                updateThematicLayerData);
+                                                updateThematicLayerData,
+                                                setHighlight);
 
 
 
@@ -119,7 +120,7 @@ const handleComponentToggle = (interfaceId) => {
   }
 }
 
-
+// 数据传入卡片中
 const selectedFeature = ref(null);
 const showDetail = ref(false)
 onMounted(async () => {

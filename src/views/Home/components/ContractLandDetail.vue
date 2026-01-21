@@ -1,20 +1,11 @@
 <template>
-  <div 
-    ref="detailCard"
-    class="tech-card"
-    :class="{ 'minimized': isMinimized }"
-    :style="{
-      top: position.y + 'px',
-      left: position.x + 'px',
-      zIndex: zIndex
-    }"
-  >
+  <div ref="detailCard" class="tech-card" :class="{ 'minimized': isMinimized }" :style="{
+    top: position.y + 'px',
+    left: position.x + 'px',
+    zIndex: zIndex
+  }">
     <!-- 标题栏 -->
-    <div 
-      class="tech-header"
-      @mousedown="startDrag"
-      @touchstart="startDrag"
-    >
+    <div class="tech-header" @mousedown="startDrag" @touchstart="startDrag">
       <div class="header-left">
         <div class="header-icon">📍</div>
         <div class="header-title">地块详情</div>
@@ -22,25 +13,17 @@
           已投保
         </div>
       </div>
-      
+
       <div class="header-actions">
-        <button 
-          class="action-btn minimize-btn"
-          @click="toggleMinimize"
-          :title="isMinimized ? '展开' : '最小化'"
-        >
+        <button class="action-btn minimize-btn" @click="toggleMinimize" :title="isMinimized ? '展开' : '最小化'">
           {{ isMinimized ? '⬆' : '⬇' }}
         </button>
-        <button 
-          class="action-btn close-btn"
-          @click="handleClose"
-          title="关闭"
-        >
+        <button class="action-btn close-btn" @click="handleClose" title="关闭">
           ✕
         </button>
       </div>
     </div>
-    
+
     <!-- 内容区域 -->
     <div v-if="!isMinimized" class="tech-content">
       <!-- 基本信息卡片 -->
@@ -64,9 +47,15 @@
               <div class="info-label">作物类型</div>
               <div class="info-value">{{ featureProperties?.zw || '--' }}</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">面积(亩)</div>
-              <div class="info-value highlight">{{ parseFloat(featureProperties?.area || 0).toFixed(2) }}</div>
+            <div class="info-item" style="flex-direction: row; justify-content: space-between;">
+              <div>
+                <div class="info-label">承保面积(亩)</div>
+                <div class="info-value highlight">{{ parseFloat(featureProperties?.area || 0).toFixed(2) }}</div>
+              </div>
+              <div>
+                <div class="info-label">实际面积(亩)</div>
+                <div class="info-value highlight">{{ computedArea }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -112,7 +101,7 @@
         </button>
       </div>
     </div>
-    
+
     <!-- 最小化状态 -->
     <div v-else class="minimized-view" @click="toggleMinimize">
       <div class="min-content">
@@ -131,6 +120,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, toRefs } from 'vue'
+import { area } from '@turf/turf'
 import LineChart from '@/components/ZsLineChart.vue'
 
 const props = defineProps({
@@ -158,6 +148,33 @@ const position = ref({ x: props.initialPosition.x, y: props.initialPosition.y })
 const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 const zIndex = ref(1000)
+
+// 计算面积（亩）
+const computedArea = computed(() => {
+  let geometry = featureProperties.value.geometry
+
+  if (!geometry || (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon')) {
+    return 0
+  }
+
+  try {
+    // 计算面积（平方米）
+    const areaInSquareMeters = area(geometry)
+
+    // 1亩 = 666.6666667平方米
+    const MU_TO_SQUARE_METERS = 666.6666667
+
+    // 转换为亩
+    const areaInMu = areaInSquareMeters / MU_TO_SQUARE_METERS
+    console.log("开始计算")
+
+    // 格式化为两位小数
+    return Number(areaInMu.toFixed(2))
+  } catch (error) {
+    console.error('计算面积时出错:', error)
+    return 0
+  }
+})
 
 // 使用计算属性，确保响应式更新
 const zsData = computed(() => {
@@ -195,36 +212,36 @@ const getShortLocation = () => {
 const startDrag = (e) => {
   zIndex.value = 1001
   isDragging.value = true
-  
+
   const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX
   const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY
-  
+
   dragOffset.value = {
     x: clientX - position.value.x,
     y: clientY - position.value.y
   }
-  
+
   e.preventDefault()
 }
 
 const handleDrag = (e) => {
   if (!isDragging.value) return
-  
+
   const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX
   const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY
-  
+
   position.value = {
     x: clientX - dragOffset.value.x,
     y: clientY - dragOffset.value.y
   }
-  
+
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
-  
+
   if (detailCard.value) {
     const cardWidth = detailCard.value.offsetWidth
     const cardHeight = detailCard.value.offsetHeight
-    
+
     position.value.x = Math.max(0, Math.min(position.value.x, windowWidth - cardWidth))
     position.value.y = Math.max(0, Math.min(position.value.y, windowHeight - cardHeight))
   }
@@ -274,7 +291,7 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(64, 156, 255, 0.3);
   border-radius: 12px;
-  box-shadow: 
+  box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(64, 156, 255, 0.1),
     0 0 20px rgba(64, 156, 255, 0.1);
@@ -642,7 +659,7 @@ onUnmounted(() => {
     right: 5vw;
     max-height: 85vh;
   }
-  
+
   .basic-info-cards {
     grid-template-columns: 1fr;
   }

@@ -123,6 +123,7 @@ export default () => {
 
   return {
     loadThematicLayer,
-    updateThematicLayerData
+    updateThematicLayerData,
+    setHighlight
   }
 }
