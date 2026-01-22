@@ -8,6 +8,7 @@
                 "outlineLayerId": "polygon-outline-layer",
                 "textLayerId": "polygon-text-layer"
             },
+            "label":"行政区划",
             "visible": true,
             "zIndex": 0,
             "apiName": "getAreaByName",
@@ -20,6 +21,7 @@
                 "fillLayerId": "field-fill-layer",
                 "outlineLayerId": "field-outline-layer"
             },
+            "label":"勾勒地块",
             "layerStyle": {
                 "fillLayerStyle": {
                     "fill-color": "#ffffe0",
@@ -55,6 +57,7 @@
                 "fillLayerId": "contract-fill-layer",
                 "outlineLayerId": "contract-outline-layer"
             },
+            "label":"耘智保地块",
             "layerStyle": {
                 "fillLayerStyle": {
                     "fill-color": [

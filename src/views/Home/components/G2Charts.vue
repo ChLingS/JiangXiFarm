@@ -639,13 +639,13 @@ onUnmounted(() => {
   position: absolute;
   z-index: 3;
   width: 25vw;
-  top: 60px;
+  top: 3vh;
   height: calc(100vh - 80px);
   max-height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 10px;
+  gap: px;
   /* 允许标题显示在容器外，但内容区域需要控制 */
   overflow: visible !important;
   padding-top: 50px;

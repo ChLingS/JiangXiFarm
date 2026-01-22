@@ -6,8 +6,8 @@ import { inject } from "vue";
  * @param {Function} baseLayerUpDate - 用于更新底图边界数据的函数
  */
 
-export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate, 
-                setHighlight) => {
+export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
+  setHighlight) => {
   const { map } = inject('$scene_map');
 
   // 防止并发点击导致的竞争条件
@@ -47,6 +47,15 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
         if (!features || features.length === 0) {
           // 点击空白处，触发边界上升事件
           if (areaMgr.getLength() > 1) {
+            console.log("上升")
+            layerConfig.layers.filter(layer => layer.id === 'thematicLayer').forEach(layer => {
+              const { sourceId, ...otherParams } = layer.layerParams;
+              const layerIds = Object.values(otherParams)
+              for (let el of layerIds) {
+                console.log("隐藏", el)
+                map.setLayoutProperty(el, 'visibility', 'none');
+              }
+            });
             await areaMgr.popLast();
             await baseLayerUpDate(areaMgr.toNames());
           }
@@ -75,15 +84,19 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
             console.error('处理行政区点击时出错:', err);
           }
           // 将加载专题数据移动到点击事件里
-          if(areaMgr.getLength() == 5){
-            const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer')
-            for (const layer of thematicLayer) {
+          if (areaMgr.getLength() == 5) {
+            layerConfig.layers.filter(layer => layer.id === 'thematicLayer').forEach(layer => {
               const layerApiName = layer.apiName
               const layerParams = layer.layerParams || {};
               thematicLayerUpDate(layerApiName, areaMgr.toNames(), layerParams)
               console.log("加载", layerApiName);
-              
-            }
+              // 提取除了sourceId之外的layerParams属性值
+              const { sourceId, ...otherParams } = layer.layerParams;
+              const layerIds = Object.values(otherParams)
+              for (let el of layerIds) {
+                map.setLayoutProperty(el, 'visibility', 'visible');
+              }
+            });
           }
           return;
 
@@ -127,12 +140,6 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
           return;
         }
 
-        // 默认情况：触发边界上升事件
-        if (areaMgr.getLength() > 1) {
-          await areaMgr.popLast();
-          await baseLayerUpDate(areaMgr.toNames());
-        }
-
       } finally {
         isProcessing = false;
       }
@@ -170,7 +177,7 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
     isProcessing = false;
   };
 
-  return{
+  return {
     initMapClickListener,
     getLastThematicLayerProps,
     cleanupMapClickListener

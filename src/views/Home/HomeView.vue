@@ -102,12 +102,11 @@ const handleLayerStatus = (changedLayer) => {
 
 // 切换组件
 const components = {
-  1: G2Charts,
+  1: BusinessOverview,
   // 未来扩展
-  2: BusinessOverview,
-  // 3: MapPanel,
+  2: G2Charts,
 }
-const activeComponent = shallowRef(null)
+const activeComponent = shallowRef(components[1])
 
 const handleComponentToggle = (interfaceId) => {
   const component = components[interfaceId]

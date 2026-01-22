@@ -29,30 +29,6 @@
 
     <!-- 中间标题 -->
     <div class="title-container">
-      <div class="title-icon-group">
-        <!-- 麦穗图标 -->
-        <svg class="wheat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L8 8L12 12L16 8L12 2Z"></path>
-          <path d="M8 8L6 10L8 12L10 10L8 8Z"></path>
-          <path d="M16 8L18 10L16 12L14 10L16 8Z"></path>
-          <path d="M12 12L10 14L12 16L14 14L12 12Z"></path>
-          <line x1="12" y1="16" x2="12" y2="20"></line>
-          <line x1="8" y1="12" x2="6" y2="14"></line>
-          <line x1="16" y1="12" x2="18" y2="14"></line>
-        </svg>
-        <!-- 芯片图标 -->
-        <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-          <line x1="9" y1="4" x2="9" y2="20"></line>
-          <line x1="15" y1="4" x2="15" y2="20"></line>
-          <line x1="4" y1="9" x2="20" y2="9"></line>
-          <line x1="4" y1="15" x2="20" y2="15"></line>
-          <circle cx="9" cy="9" r="1" fill="currentColor"></circle>
-          <circle cx="15" cy="9" r="1" fill="currentColor"></circle>
-          <circle cx="9" cy="15" r="1" fill="currentColor"></circle>
-          <circle cx="15" cy="15" r="1" fill="currentColor"></circle>
-        </svg>
-      </div>
       <div class="title-group">
     <div class="title">智慧农业展示平台</div>
         <div class="title-subtitle">Smart Agriculture Display Platform</div>
@@ -106,11 +82,10 @@ onUnmounted(() => {
 })
 </script>
 
-<style>
+<style scoped>
 .header {
   position: fixed;
   top: -10px;
-  left: -7px;
   width: 100%;
   height: 10vh;
   min-height: 80px;
@@ -123,7 +98,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 3rem;
   position: relative;
   overflow: hidden;
   font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
@@ -287,7 +261,7 @@ onUnmounted(() => {
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: bold;
   background: linear-gradient(135deg, #00b7ff 0%, #00d4ff 50%, #00e5ff 100%);
   -webkit-background-clip: text;
@@ -372,84 +346,5 @@ onUnmounted(() => {
   transform: scale(1.1);
 }
 
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  .header {
-    padding: 0 2rem;
-  }
 
-  .title {
-    font-size: 2rem;
-  }
-
-  .title-subtitle {
-    font-size: 0.85rem;
-  }
-
-  .wheat-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .chip-icon {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .header {
-    height: 8vh;
-    min-height: 60px;
-    padding: 0 1rem;
-  }
-
-  .timer {
-    padding: 6px 12px;
-    gap: 8px;
-  }
-
-  .calendar-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .timer-content .date {
-    font-size: 0.75rem;
-  }
-
-  .timer-content .time {
-    font-size: 0.9rem;
-  }
-
-  .title {
-    font-size: 1.5rem;
-    letter-spacing: 1px;
-  }
-
-  .title-subtitle {
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-  }
-
-  .wheat-icon {
-    width: 24px;
-    height: 24px;
-  }
-
-  .chip-icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .action-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .action-icon svg {
-    width: 20px;
-    height: 20px;
-  }
-}
 </style>
