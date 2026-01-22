@@ -27,13 +27,54 @@ import { RouterView } from 'vue-router'
   height: 100vh;
 }
 
+/* Element Plus 组件样式优化 */
 .el-select__wrapper.el-tooltip__trigger {
-  background-color: #1B2638;
+  
+  background-color: rgba(27, 38, 56, 0.8);
+  border: 1px solid rgba(64, 156, 255, 0.3);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
 }
 
+.el-select__wrapper.el-tooltip__trigger:hover {
+  border-color: rgba(64, 156, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 183, 255, 0.2);
+}
 
-.el-select__wrapper.el-tooltip__trigger {
-  box-shadow: none;
-  border: none
+.el-input__wrapper {
+  background-color: rgba(27, 38, 56, 0.8);
+  border: 1px solid rgba(64, 156, 255, 0.3);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.el-input__wrapper:hover {
+  border-color: rgba(64, 156, 255, 0.5);
+}
+
+.el-input__wrapper.is-focus {
+  border-color: #00b7ff;
+  box-shadow: 0 0 10px rgba(0, 183, 255, 0.3);
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #00b7ff, #00d4ff);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 183, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(135deg, #00d4ff, #00b7ff);
+  box-shadow: 0 6px 20px rgba(0, 183, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.el-cascader {
+  background-color: rgba(27, 38, 56, 0.8);
+}
+
+.el-cascader:hover {
+  border-color: rgba(64, 156, 255, 0.5);
 }
 </style>
