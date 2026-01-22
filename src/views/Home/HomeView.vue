@@ -10,7 +10,7 @@
   <div>
 
     <MapControl />
-    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" />
+    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" :transConfig="layerConfig"/>
 
     <component :is="activeComponent" v-if="activeComponent" />
 
@@ -55,7 +55,7 @@ layerInitialize()
 
 
 // 获取专题图层配置
-const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer')
+const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer').sort((a, b) => a.zIndex - b.zIndex)
 for (const layer of thematicLayer) {
   console.log(`Thematic Layer ID: ${layer.id}, API Name: ${layer.apiName}`);
   const layerParams = layer.layerParams || {};

@@ -108,7 +108,7 @@
                 }
             },
             "visible": false,
-            "zIndex": 1,
+            "zIndex": 2,
             "apiName": "getContractedLandByName",
             "clickable": true
         }

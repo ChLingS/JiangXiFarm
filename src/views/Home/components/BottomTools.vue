@@ -37,10 +37,24 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, defineProps } from 'vue'
 import Footer from '@/components/Footer.vue';
 
 const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
+
+const props = defineProps({
+  transConfig:{
+    type: Object,
+    default:()=>null
+  }
+})
+
+const layerConfig = props
+console.log("bottomTool", layerConfig)
+// for ( layer in layerConfig.layers )
+// {
+  
+// }
 
 let showLayerPanel = ref(false)
 const layerSelect = ref([
