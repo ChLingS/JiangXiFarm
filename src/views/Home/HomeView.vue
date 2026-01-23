@@ -102,9 +102,9 @@ const handleLayerStatus = (changedLayer) => {
 
 // 切换组件
 const components = {
-  1: BusinessOverview,
+  2: BusinessOverview,
   // 未来扩展
-  2: G2Charts,
+  1: G2Charts,
 }
 const activeComponent = shallowRef(components[1])
 
