@@ -69,10 +69,7 @@
                 <div class="statistic-title">总面积</div>
                 <div class="statistic-value">45,230 <span class="statistic-suffix">km²</span></div>
       </div>
-              <el-progress
-                :percentage="75"
-                :color="customColors"
-              />
+              
             </el-space>
           </el-card>
         </div>
