@@ -20,6 +20,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted, watch, inject, shallowRef, onUnmounted, provide } from 'vue';
+
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
 import ContractLandDetail from './components/ContractLandDetail.vue'
@@ -28,21 +30,25 @@ import G2Charts from './components/G2Charts.vue';
 import BusinessOverview from './components/BusinessOverview.vue';
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
-import useThematicLayer from '@/Hooks/MapThematicLayer';
-const { loadThematicLayer, updateThematicLayerData, setHighlight } = useThematicLayer();
+import { useThematicLayerProvider } from '@/Hooks/MapThematicLayer';
+const thematicLayerService = useThematicLayerProvider();
+const { loadThematicLayer, updateThematicLayerData, setHighlight } = thematicLayerService;
+provide('updateThematicLayerData', updateThematicLayerData)
+provide('setHighlight', setHighlight)
 
 import layerConfig from '@/config/layerConfig.json'
+provide('layerConfig', layerConfig);
+
 import clickController from '@/Hooks/LayerClickEventHandl';
 
 
-import { ref, onMounted, watch, inject, shallowRef, onUnmounted } from 'vue';
-import AreaQueryManager from '@/models/AreaQueryManager'
 
 const { map } = inject('$scene_map')
 
 // 图层管理 — 使用 AreaQueryManager 以避免并发竞争
-/** @type {import('@/models/AreaQueryManager').default} */
-const areaMgr = new AreaQueryManager(['江西省', '宜春市', '丰城市'])
+/** @type {import('@/plugins/AreaQueryManager').default} */
+const areaMgr = inject('areaManager')
+
 
 // 加载边界图层
 // 获取配置中的API名称
@@ -51,6 +57,7 @@ const apiName = baseLayer.apiName
 const baseLayerParams = baseLayer ? baseLayer.layerParams : {}
 console.log('Base Layer Params:', baseLayerParams);
 const { layerInitialize, updateBoundaryLayerData } = useBoundaryLayer(areaMgr, apiName, baseLayerParams);
+provide('updateBoundaryLayerData', updateBoundaryLayerData)
 layerInitialize()
 
 

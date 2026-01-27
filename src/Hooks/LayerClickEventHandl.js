@@ -2,7 +2,7 @@ import { inject } from "vue";
 
 /**
  * 管理地图图层点击事件的Hook
- * @param {import('@/models/AreaQueryManager').default} areaMgr - 行政区管理器实例
+ * @param {import('@/plugins/AreaQueryManager').default} areaMgr - 行政区管理器实例
  * @param {Function} baseLayerUpDate - 用于更新底图边界数据的函数
  */
 
@@ -127,7 +127,12 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
             console.log('专题图层点击属性:', thematicLayerProps);
 
             // 设置高亮样式
-            setHighlight(feature, sourceId)
+            setHighlight(feature.id, sourceId)
+          //   const searchFeatures = await map.querySourceFeatures(sourceId, {
+          //   filter: ["==", "bdh", props.bdh]
+          // });
+          // console.log('找到的值', searchFeatures);
+          
 
             // 如果有回调函数，则调用
             if (onThematicLayerClick && typeof onThematicLayerClick === 'function') {

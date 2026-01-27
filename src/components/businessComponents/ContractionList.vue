@@ -11,14 +11,12 @@
 
     <transition name="slide-fade">
       <div class="panel-content" v-show="!isCollapsed">
-
-
         <div class="table-container">
           <div class="table-header">
             <div class="header-cell insured">被保险人</div>
             <div class="header-cell type">险种</div>
-            <div class="header-cell premium">总保费/元</div>
-            <div class="header-cell claim">总赔款/元</div>
+            <div class="header-cell area">面积/亩</div>
+            <div class="header-cell village">村</div>
           </div>
 
           <div class="table-body">
@@ -26,11 +24,8 @@
               :class="{ 'active': activeId === item.id }" @click="handleItemClick(item)">
               <div class="cell insured">{{ item.insuredName }}</div>
               <div class="cell type">{{ item.insuranceType }}</div>
-              <div class="cell premium">{{ formatCurrency(item.totalPremium) }}</div>
-              <div class="cell claim" :class="{ 'no-claim': item.totalClaim === 0 }">
-                {{ formatCurrency(item.totalClaim) }}
-              </div>
-
+              <div class="cell area">{{ formatArea(item.area) }}</div>
+              <div class="cell village">{{ item.village }}</div>
             </div>
           </div>
         </div>
@@ -54,36 +49,76 @@
 </template>
 
 <script setup>
-import { ref, computed, defineEmits } from 'vue';
+import { ref, computed, defineEmits, inject, watch, onMounted } from 'vue';
+import apiRegistry from '@/api/apiRegistry'
 
-const emit = defineEmits("sendContraction")
+const emit = defineEmits(["sendContraction"])
 
 // 状态管理
 const isCollapsed = ref(false);
-
 const currentPage = ref(1);
 const activeId = ref(null);
-const totalItems = 3290; // 根据图片显示有329页，每页10条，总共约3290条
-const totalPages = 329; // 图片显示总共有329页
+const totalItems = ref(0);
+const totalPages = ref(0);
+const isLoading = ref(false);
 
 // 保单列表数据
-const policyList = ref([
-  { id: 1, insuredName: '张*明', insuranceType: '玉米', totalPremium: 945, totalClaim: 0 },
-  { id: 2, insuredName: '何*', insuranceType: '玉米', totalPremium: 13500, totalClaim: 0 },
-  { id: 3, insuredName: '德江县...', insuranceType: '玉米', totalPremium: 9765, totalClaim: 0 },
-  { id: 4, insuredName: '德江县...', insuranceType: '玉米', totalPremium: 12195, totalClaim: 0 },
-  { id: 5, insuredName: '吴*春', insuranceType: '玉米', totalPremium: 4635, totalClaim: 0 },
-  { id: 6, insuredName: '杨*正', insuranceType: '水稻', totalPremium: 1736.86, totalClaim: 0 },
-  { id: 7, insuredName: '王*收', insuranceType: '玉米', totalPremium: 57180.69, totalClaim: 0 },
-  { id: 8, insuredName: '付*', insuranceType: '水稻', totalPremium: 6720, totalClaim: 0 },
-  { id: 9, insuredName: '何*领', insuranceType: '玉米', totalPremium: 43923.6, totalClaim: 0 },
-  { id: 10, insuredName: '韦*云', insuranceType: '水稻', totalPremium: 5342.4, totalClaim: 0 },
-  { id: 11, insuredName: '何*泽', insuranceType: '玉米', totalPremium: 18987.3, totalClaim: 0 },
-  { id: 12, insuredName: '李*华', insuranceType: '水稻', totalPremium: 3250, totalClaim: 0 },
-  { id: 13, insuredName: '王*明', insuranceType: '玉米', totalPremium: 7890, totalClaim: 0 },
-  { id: 14, insuredName: '刘*伟', insuranceType: '玉米', totalPremium: 4520, totalClaim: 0 },
-  { id: 15, insuredName: '陈*强', insuranceType: '水稻', totalPremium: 6800, totalClaim: 0 }
-]);
+const policyList = ref([]);
+
+// 当前行政区
+const areaMgr = inject('areaManager')
+
+// 数据获取逻辑
+const fetchPolicyData = async () => {
+  if (isLoading.value) return;
+  
+  isLoading.value = true;
+  try {
+    const response = await apiRegistry.execute('getContractedListByAreaManager', areaMgr, {
+      page: currentPage.value,
+      page_size: 15
+    })
+    
+    if (response && response.success) {
+      // 获取分页信息
+      const pagination = response.data.pagination;
+      totalItems.value = pagination.total;
+      totalPages.value = pagination.total_pages;
+
+      // 处理数据列表 - 根据实际接口字段调整
+      const dataList = response.data.data.map(el => ({
+        id: el.gid || el.id,
+        insuredName: el.xm, // 被保险人姓名
+        insuranceType: el.zw, // 作物类型
+        area: el.area, // 面积
+        village: el.cun, // 村
+        // 保留原始数据，便于后续使用
+        originalData: el
+      }));
+      
+      policyList.value = dataList;
+    }
+  } catch (error) {
+    console.error('查询失败:', error);
+    // 可以添加错误提示
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// 监听区域变化和页码变化
+watch(
+  [() => areaMgr?.slots?.value, currentPage],
+  async () => {
+    await fetchPolicyData();
+  },
+  { deep: true, immediate: true }
+)
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchPolicyData();
+})
 
 // 过滤后的保单列表
 const filteredPolicyList = computed(() => {
@@ -93,10 +128,13 @@ const filteredPolicyList = computed(() => {
 // 计算可见页码
 const visiblePages = computed(() => {
   const pages = [];
+  const total = totalPages.value;
+
+  if (total <= 0) return pages;
 
   // 如果总页数少于等于7页，显示所有页码
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) {
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
       pages.push(i);
     }
   } else {
@@ -106,13 +144,13 @@ const visiblePages = computed(() => {
         pages.push(i);
       }
       pages.push('...');
-      pages.push(totalPages);
+      pages.push(total);
     }
     // 当前页在末尾部分
-    else if (currentPage.value >= totalPages - 3) {
+    else if (currentPage.value >= total - 3) {
       pages.push(1);
       pages.push('...');
-      for (let i = totalPages - 4; i <= totalPages; i++) {
+      for (let i = total - 4; i <= total; i++) {
         pages.push(i);
       }
     }
@@ -124,7 +162,7 @@ const visiblePages = computed(() => {
       pages.push(currentPage.value);
       pages.push(currentPage.value + 1);
       pages.push('...');
-      pages.push(totalPages);
+      pages.push(total);
     }
   }
 
@@ -134,19 +172,25 @@ const visiblePages = computed(() => {
 // 方法
 const handleItemClick = (item) => {
   activeId.value = item.id;
-  emit("sendContraction", item)
-  console.log('选中保单:', item);
+  emit("sendContraction", item);
+  // console.log('选中保单:', item);
 };
 
 const handlePageClick = (page) => {
   if (page === '...' || page === currentPage.value) return;
   currentPage.value = page;
-  // 这里应该触发数据重新加载
-  console.log('切换到第', page, '页');
 };
 
+// 格式化面积
+const formatArea = (value) => {
+  if (!value) return '0';
+  const num = parseFloat(value);
+  return isNaN(num) ? '0' : num.toFixed(2);
+};
+
+// 格式化金额（保留，可能后续会用到）
 const formatCurrency = (value) => {
-  if (value === 0) return '0';
+  if (value === 0 || !value) return '0';
   return new Intl.NumberFormat('zh-CN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2
@@ -157,7 +201,7 @@ const formatCurrency = (value) => {
 <style scoped>
 .contraction-list-panel {
   position: absolute;
-  width: 450px;
+  width: 430px; 
   height: auto;
   max-height: 75vh;
   z-index: 3;
@@ -268,9 +312,7 @@ const formatCurrency = (value) => {
   gap: 20px;
 }
 
-
-
-/* 表格区域 - 调整列宽避免横向滚动条 */
+/* 表格区域 */
 .table-container {
   display: flex;
   flex-direction: column;
@@ -280,8 +322,7 @@ const formatCurrency = (value) => {
   overflow: hidden;
   border: 1px solid rgba(64, 156, 255, 0.1);
   min-height: 0;
-  /* 禁止横向滚动条 */
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .table-header {
@@ -293,8 +334,8 @@ const formatCurrency = (value) => {
   color: #8a9bb8;
   font-weight: 500;
   flex-shrink: 0;
-  /* 确保所有列在一行内，不换行 */
   white-space: nowrap;
+  min-width: 100%;
 }
 
 .table-body {
@@ -302,8 +343,7 @@ const formatCurrency = (value) => {
   overflow-y: auto;
   min-height: 0;
   max-height: calc(100% - 44px);
-  /* 禁止横向滚动条 */
-  overflow-x: hidden;
+  min-width: 100%;
 }
 
 .table-row {
@@ -315,8 +355,8 @@ const formatCurrency = (value) => {
   font-size: 13px;
   align-items: center;
   min-height: 44px;
-  /* 确保所有列在一行内，不换行 */
   white-space: nowrap;
+  min-width: 100%;
 }
 
 .table-row:hover {
@@ -334,48 +374,37 @@ const formatCurrency = (value) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  /* 调整列宽，确保不出现横向滚动条 */
   box-sizing: border-box;
 }
 
-/* 根据图片中的实际显示比例调整列宽 */
+/* 调整列宽比例 */
 .insured {
   flex: 1.5;
-  /* 被保险人列相对较宽 */
   min-width: 100px;
   max-width: 120px;
 }
 
 .type {
-  flex: 0.8;
-  /* 险种列较窄 */
-  min-width: 60px;
+  flex: 1;
+  min-width: 80px;
   max-width: 80px;
 }
 
-.premium,
-.claim {
+.area {
   flex: 1;
-  /* 保费和赔款列宽度相同 */
-  min-width: 100px;
-  max-width: 120px;
-  text-align: right;
+  min-width: 80px;
+  max-width: 80px;
+  /* text-align: right; */
   font-family: 'SF Mono', Monaco, 'Cascadia Mono', 'Segoe UI Mono', monospace;
-  font-size: 12px;
-  /* 减小字体大小，确保数字完整显示 */
-}
-
-.cell.premium {
   color: #f0b90b;
   font-weight: 500;
 }
 
-.cell.claim.no-claim {
+.village {
+  flex: 1.2;
+  min-width: 100px;
+  max-width: 120px;
   color: #8a9bb8;
-}
-
-.cell.claim:not(.no-claim) {
-  color: #0ecb81;
 }
 
 /* 分页容器 */
@@ -463,6 +492,25 @@ const formatCurrency = (value) => {
 }
 
 .table-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(64, 156, 255, 0.5);
+}
+
+/* 横向滚动条 */
+.table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: rgba(10, 18, 35, 0.3);
+  border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(64, 156, 255, 0.3);
+  border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
   background: rgba(64, 156, 255, 0.5);
 }
 </style>

@@ -81,8 +81,51 @@ export const JiangXiApi = {
       url: `getContractedLayer?shi=${nameCollection[1]}&xian=${nameCollection[2]}&zhen=${nameCollection[3]}&cun=${nameCollection[4]}`,
       method: 'GET'
     })
+  },
+
+  /**
+   * 根据AreaQueryManager实例自动构建查询
+   * @param {Object} areaManager - AreaQueryManager实例
+   * @param {Object} additionalParams - 额外参数
+   * @param {number} [additionalParams.page=1] - 页码
+   * @param {number} [additionalParams.page_size=20] - 每页大小
+   */
+  getContractedListByAreaManager: (areaManager, additionalParams = {}) => {
+    if (!areaManager || !areaManager.slots) {
+      throw new Error('areaManager参数无效')
+    }
+
+    const { slots } = areaManager
+    const queryParams = {
+      page: additionalParams.page || 1,
+      page_size: additionalParams.page_size || 20
+    }
+
+    // 从areaManager中提取行政区划参数
+    if (slots.value.sheng?.name) queryParams.sheng = slots.value.sheng.name
+    if (slots.value.shi?.name) queryParams.shi = slots.value.shi.name
+    if (slots.value.xian?.name) queryParams.xian = slots.value.xian.name
+    if (slots.value.zhen?.name) queryParams.zhen = slots.value.zhen.name
+    if (slots.value.cun?.name) queryParams.cun = slots.value.cun.name
+
+    // 如果有地块编号参数，也添加
+    if (additionalParams.bdh) queryParams.bdh = additionalParams.bdh
+
+    // 过滤空参数
+    Object.keys(queryParams).forEach(key => {
+      if (queryParams[key] === '' || queryParams[key] === null || queryParams[key] === undefined) {
+        delete queryParams[key]
+      }
+    })
+
+    return request({
+      url: '/getContractedList',
+      method: 'GET',
+      params: queryParams
+    })
   }
 };
+
 
 import apiRegistry from './apiRegistry.js'
 
@@ -90,3 +133,4 @@ import apiRegistry from './apiRegistry.js'
 apiRegistry.register('getAreaByName', JiangXiApi.getAreaByName);
 apiRegistry.register('getFieldByName', JiangXiApi.getFieldByName);
 apiRegistry.register('getContractedLandByName', JiangXiApi.getContractedLandByName);
+apiRegistry.register('getContractedListByAreaManager', JiangXiApi.getContractedListByAreaManager);
