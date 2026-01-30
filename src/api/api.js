@@ -89,6 +89,11 @@ export const JiangXiApi = {
    * @param {Object} additionalParams - 额外参数
    * @param {number} [additionalParams.page=1] - 页码
    * @param {number} [additionalParams.page_size=20] - 每页大小
+   * @param {string} [additionalParams.order_by='gid'] - 排序字段
+   * @param {string} [additionalParams.order_dir='ASC'] - 排序方向
+   * @param {string} [additionalParams.sfz] - 身份证号
+   * @param {string} [additionalParams.xm] - 姓名
+   * @param {string} [additionalParams.zw] - 作物类型
    */
   getContractedListByAreaManager: (areaManager, additionalParams = {}) => {
     if (!areaManager || !areaManager.slots) {
@@ -96,34 +101,58 @@ export const JiangXiApi = {
     }
 
     const { slots } = areaManager
-    const queryParams = {
+    // 创建请求体对象
+    const requestBody = {
       page: additionalParams.page || 1,
-      page_size: additionalParams.page_size || 20
+      page_size: additionalParams.page_size || 20,
+      order_by: additionalParams.order_by || 'gid',
+      order_dir: additionalParams.order_dir || 'ASC'
     }
 
     // 从areaManager中提取行政区划参数
-    if (slots.value.sheng?.name) queryParams.sheng = slots.value.sheng.name
-    if (slots.value.shi?.name) queryParams.shi = slots.value.shi.name
-    if (slots.value.xian?.name) queryParams.xian = slots.value.xian.name
-    if (slots.value.zhen?.name) queryParams.zhen = slots.value.zhen.name
-    if (slots.value.cun?.name) queryParams.cun = slots.value.cun.name
+    if (slots.value?.sheng?.name) requestBody.sheng = slots.value.sheng.name
+    if (slots.value?.shi?.name) requestBody.shi = slots.value.shi.name
+    if (slots.value?.xian?.name) requestBody.xian = slots.value.xian.name
+    if (slots.value?.zhen?.name) requestBody.zhen = slots.value.zhen.name
+    if (slots.value?.cun?.name) requestBody.cun = slots.value.cun.name
 
-    // 如果有地块编号参数，也添加
-    if (additionalParams.bdh) queryParams.bdh = additionalParams.bdh
+    // 添加额外参数
+    if (additionalParams.bdh) requestBody.bdh = additionalParams.bdh
+    if (additionalParams.sfz) requestBody.sfz = additionalParams.sfz
+    if (additionalParams.xm) requestBody.xm = additionalParams.xm
+    if (additionalParams.zw) requestBody.zw = additionalParams.zw
 
     // 过滤空参数
-    Object.keys(queryParams).forEach(key => {
-      if (queryParams[key] === '' || queryParams[key] === null || queryParams[key] === undefined) {
-        delete queryParams[key]
+    Object.keys(requestBody).forEach(key => {
+      if (requestBody[key] === '' ||
+        requestBody[key] === null ||
+        requestBody[key] === undefined) {
+        delete requestBody[key]
       }
     })
 
     return request({
       url: '/getContractedList',
-      method: 'GET',
-      params: queryParams
+      method: 'POST',  // 改为POST请求
+      headers: {
+        'Content-Type': 'application/json'  // 设置JSON内容类型
+      },
+      data: requestBody  // 使用data而不是params
+    })
+  },
+  getShiXianDivison: () => {
+    return request({
+      url: `/divisions`,
+      method: 'GET'
+    })
+  },
+  getZhenCunDivison: (shi, xian) => {
+    return request({
+      url: `/divisions/detail?shi=${shi}&xian=${xian}`,
+      method: 'GET'
     })
   }
+
 };
 
 
@@ -134,3 +163,5 @@ apiRegistry.register('getAreaByName', JiangXiApi.getAreaByName);
 apiRegistry.register('getFieldByName', JiangXiApi.getFieldByName);
 apiRegistry.register('getContractedLandByName', JiangXiApi.getContractedLandByName);
 apiRegistry.register('getContractedListByAreaManager', JiangXiApi.getContractedListByAreaManager);
+apiRegistry.register('getShiXianDivison', JiangXiApi.getShiXianDivison);
+apiRegistry.register('getZhenCunDivison', JiangXiApi.getZhenCunDivison);

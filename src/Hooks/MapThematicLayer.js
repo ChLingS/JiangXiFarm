@@ -61,6 +61,7 @@ export const useThematicLayerProvider = () => {
         case "bdh":
           // 查询BDH对应的要素ID
           console.log('query bdh, sourceId=', sourceId, 'map.getSource=', map.getSource(sourceId));
+          // 注意：querySourceFeatures 只能查询已加载到地图上的数据
           const features = await map.querySourceFeatures(sourceId, {
             filter: ["==", "bdh", identifier]
           });
@@ -199,8 +200,9 @@ export const useThematicLayerProvider = () => {
         type: 'FeatureCollection',
         features: featuresWithIds
       });
-
       console.log('专题图层数据更新成功');
+      return true;
+      
     } else {
       console.error('无法更新专题图层数据: 未获取到有效数据');
     }

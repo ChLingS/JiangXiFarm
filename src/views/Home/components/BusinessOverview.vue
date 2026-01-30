@@ -1,12 +1,13 @@
 <template>
   <div>
-    <ContractionList @sendContraction=handleContractionData></ContractionList>
+    <ContractionList :searchPayload="searchPayload" @sendContraction=handleContractionData></ContractionList>
     <ContractionStatus></ContractionStatus>
-    <AreaSelect></AreaSelect>
+    <AreaSelect ref="areaRef" @search="handleAreaSearch"></AreaSelect>
   </div>
 </template>
 <script setup>
 import { ref, inject } from 'vue'
+
 
 import ContractionList from '@/components/businessComponents/ContractionList.vue';
 import ContractionStatus from '@/components/businessComponents/ContractionStatus.vue';
@@ -17,6 +18,16 @@ const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
 const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer').sort((a, b) => a.zIndex - b.zIndex)
 
 const areaMgr = inject('areaManager');
+const areaRef = ref(null);
+const searchPayload = ref({});
+
+const handleAreaSearch = (payload) => {
+  console.log('AreaSelect search', payload);
+  // 将 AreaSelect 的查询载荷传递给子组件进行联合查询
+  searchPayload.value = payload || {};
+};
+
+
 
 const updateThematicLayerData = inject('updateThematicLayerData');
 const updateBoundaryLayerData = inject('updateBoundaryLayerData');
@@ -58,11 +69,17 @@ const handleContractionData = async (contractionData) => {
     // 触发专题图层更新
     for (const layer of thematicLayer) {
       const { apiName, layerParams = {} } = layer;
-      await updateThematicLayerData(apiName, areaMgr.toNames(), layerParams);
+      let loadResult = await updateThematicLayerData(apiName, areaMgr.toNames(), layerParams);
+      if (loadResult) {
+        // 确保数据加载完成后再设置高亮
+        setTimeout(() => setHighlight(contractionData.originalData.bdh, 'contract-data-source', 'bdh'), 1000);
+      }
     }
+  }else{
+    await setHighlight(contractionData.originalData.bdh, 'contract-data-source', 'bdh');
   }
 
-  await setHighlight(contractionData.originalData.bdh, 'contract-data-source', 'bdh');
+
 
 
 

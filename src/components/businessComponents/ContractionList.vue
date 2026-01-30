@@ -54,6 +54,11 @@ import apiRegistry from '@/api/apiRegistry'
 
 const emit = defineEmits(["sendContraction"])
 
+// 从父组件接收查询载荷（响应式对象）
+const props = defineProps({
+  searchPayload: { type: Object, default: () => ({}) }
+})
+
 // 状态管理
 const isCollapsed = ref(false);
 const currentPage = ref(1);
@@ -74,10 +79,38 @@ const fetchPolicyData = async () => {
   
   isLoading.value = true;
   try {
-    const response = await apiRegistry.execute('getContractedListByAreaManager', areaMgr, {
+    // 构建符合后端 `getContractedListByAreaManager` 的额外参数
+    const payload = (props && props.searchPayload) ? props.searchPayload : {};
+    // 有些父组件会把查询条件放到 payload.filters 中，优先使用 filters
+    const source = payload && payload.filters ? payload.filters : payload;
+    const additionalParams = {
       page: currentPage.value,
       page_size: 15
-    })
+    };
+
+    // 支持作物类型和保单号等直接字段
+    if (source.zw) additionalParams.zw = source.zw;
+    if (source.bdh) additionalParams.bdh = source.bdh;
+
+    // 将 searchField/searchText 转换为后端期望的字段名（xm 或 sfz）
+    if (source.searchField && source.searchText) {
+      const field = String(source.searchField).trim();
+      const text = source.searchText;
+      if (field === 'xm') additionalParams.xm = text;
+      else if (field === 'sfz') additionalParams.sfz = text;
+      else {
+        additionalParams[field] = text;
+      }
+    }
+
+    // 如果父组件传入了区域字段（或 filters 中包含），允许覆盖（通常 areaMgr 优先）
+    ['sheng', 'shi', 'xian', 'zhen', 'cun'].forEach(key => {
+      if (source[key]) additionalParams[key] = source[key];
+    });
+
+    console.log('additionalParams', additionalParams, 'source', source);
+
+    const response = await apiRegistry.execute('getContractedListByAreaManager', areaMgr, additionalParams)
     
     if (response && response.success) {
       // 获取分页信息
@@ -108,11 +141,22 @@ const fetchPolicyData = async () => {
 
 // 监听区域变化和页码变化
 watch(
-  [() => areaMgr?.slots?.value, currentPage],
+  [() => areaMgr?.slots?.value, currentPage, () => props && props.searchPayload],
   async () => {
     await fetchPolicyData();
   },
   { deep: true, immediate: true }
+)
+
+// 当父组件传入的查询条件变化时，重置到第一页
+watch(
+  () => (props && props.searchPayload) || {},
+  (newVal, oldVal) => {
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      currentPage.value = 1;
+    }
+  },
+  { deep: true }
 )
 
 // 组件挂载时获取数据
