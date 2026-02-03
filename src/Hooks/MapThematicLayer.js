@@ -1,6 +1,7 @@
 import { inject, provide } from "vue";
 import apiRegistry from '@/api/apiRegistry'
 
+
 // 创建一个独立的函数用于提供 ThematicLayer 服务
 export const useThematicLayerProvider = () => {
   const { map } = inject('$scene_map', {});
@@ -66,7 +67,7 @@ export const useThematicLayerProvider = () => {
             filter: ["==", "bdh", identifier]
           });
           console.log("查询到的要素", features);
-          
+
           if (features.length === 0) {
             console.warn(`No features found for bdh=${identifier}`);
             return;
@@ -171,38 +172,40 @@ export const useThematicLayerProvider = () => {
       console.error('参数错误：第一个参数必须是API名称字符串或有效的GeoJSON对象');
       return;
     }
-
     if (newData) {
       const source = map.getSource(SOURCE_ID);
       if (!source) {
         console.error(`未找到数据源: ${SOURCE_ID}`);
         return;
       }
-
-      let featureId = 0;
-      const featuresWithIds = newData.features.map((orig) => {
-        const id = featureId++;
-        const properties = {
-          ...(orig.properties || {}),
-          layerType: 'thematicLayer'
-        };
-
-        return {
-          ...orig,
-          id,
-          properties
-        };
-      });
-
-      console.log("featuresWithId", featuresWithIds[0]);
-
-      source.setData({
-        type: 'FeatureCollection',
-        features: featuresWithIds
-      });
-      console.log('专题图层数据更新成功');
-      return true;
+      console.log('newData', newData);
       
+      if ( newData.code === 1 || newData.features.length === 0) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      } else {
+        let featureId = 0;
+        // 当newData获取到数据后，更新数据源
+        const featuresWithIds = newData.features.map((orig) => {
+          const id = featureId++;
+          const properties = {
+            ...(orig.properties || {}),
+            layerType: 'thematicLayer'
+          };
+          return {
+            ...orig,
+            id,
+            properties
+          };
+        });
+        source.setData({
+          type: 'FeatureCollection',
+          features: featuresWithIds
+        });
+      }
+      return true;
     } else {
       console.error('无法更新专题图层数据: 未获取到有效数据');
     }
