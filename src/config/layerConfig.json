@@ -15,7 +15,8 @@
             "clickable": true
         },
         {
-            "id": "thematicLayer",
+            "id": "fieldLayer",
+            "type": "thematicLayer",
             "layerParams": {
                 "sourceId": "field-data-source",
                 "fillLayerId": "field-fill-layer",
@@ -51,7 +52,8 @@
             "clickable": false
         },
         {
-            "id": "thematicLayer",
+            "id": "contractLayer",
+            "type": "thematicLayer",
             "layerParams": {
                 "sourceId": "contract-data-source",
                 "fillLayerId": "contract-fill-layer",

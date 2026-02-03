@@ -36,8 +36,9 @@ const { loadThematicLayer, updateThematicLayerData, setHighlight } = thematicLay
 provide('updateThematicLayerData', updateThematicLayerData)
 provide('setHighlight', setHighlight)
 
-import layerConfig from '@/config/layerConfig.json'
-provide('layerConfig', layerConfig);
+// 读取layer配置载入全局
+import layers from '@/plugins/layerStatusManager'
+provide('layers', layers);
 
 import clickController from '@/Hooks/LayerClickEventHandl';
 
@@ -52,7 +53,7 @@ const areaMgr = inject('areaManager')
 
 // 加载边界图层
 // 获取配置中的API名称
-const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
+const baseLayer = layers.getBaseLayer()
 const apiName = baseLayer.apiName
 const baseLayerParams = baseLayer ? baseLayer.layerParams : {}
 console.log('Base Layer Params:', baseLayerParams);
@@ -62,7 +63,7 @@ layerInitialize()
 
 
 // 获取专题图层配置
-const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer').sort((a, b) => a.zIndex - b.zIndex)
+const thematicLayer = layers.getThematicLayers()
 for (const layer of thematicLayer) {
   console.log(`Thematic Layer ID: ${layer.id}, API Name: ${layer.apiName}`);
   const layerParams = layer.layerParams || {};

@@ -85,7 +85,7 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
           }
           // 将加载专题数据移动到点击事件里
           if (areaMgr.getLength() == 5) {
-            layerConfig.layers.filter(layer => layer.id === 'thematicLayer').forEach(layer => {
+            layerConfig.layers.filter(layer => layer.type === 'thematicLayer').forEach(layer => {
               const layerApiName = layer.apiName
               const layerParams = layer.layerParams || {};
               thematicLayerUpDate(layerApiName, areaMgr.toNames(), layerParams)
