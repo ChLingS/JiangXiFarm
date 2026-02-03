@@ -1,3 +1,4 @@
+// AreaQueryManager.js
 import { ref, computed } from 'vue'
 
 // 类型定义与说明
@@ -25,16 +26,7 @@ const LEVELS = ['sheng', 'shi', 'xian', 'zhen', 'cun']
  *
  * 节点格式建议：{ level, name, code, center, bbox }
  */
-/**
- * 固定槽位的行政区管理器
- * - 每个层级一个槽位，保证同级只有一项
- * - 所有变更序列化以避免并发竞争
- * - 对外保持兼容的名称数组 `adNames`，并提供更丰富的槽位 API
- *
- * @example
- * const mgr = new AreaQueryManager(['省名','市名'])
- */
-export default class AreaQueryManager {
+class AreaQueryManager {
   /**
    * @param {Array<string|AreaNode>} [initial] - 可选初始节点数组
    */
@@ -217,3 +209,26 @@ export default class AreaQueryManager {
    */
   getLength() { return this.depth.value }
 }
+
+// 创建默认实例
+const areaManager = new AreaQueryManager()
+
+// Vue 插件安装器
+const AreaQueryManagerPlugin = {
+  install(app, options = {}) {
+    // 提供默认实例
+    app.provide('areaManager', areaManager)
+    
+    // 可选：添加全局属性，便于在模板中使用
+    app.config.globalProperties.$areaManager = areaManager
+    
+    // 可选：注入初始化选项
+    if (options.initial) {
+      areaManager.setNames(options.initial)
+    }
+  }
+}
+
+// 导出类、实例和插件
+export { AreaQueryManager as AreaQueryManagerClass, areaManager }
+export default AreaQueryManagerPlugin

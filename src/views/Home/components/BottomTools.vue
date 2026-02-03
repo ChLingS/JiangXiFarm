@@ -37,16 +37,44 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, defineProps } from 'vue'
 import Footer from '@/components/Footer.vue';
 
 const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
 
+const props = defineProps({
+  transConfig:{
+    type: Object,
+    default:()=>null
+  }
+})
+
+const layerConfig = props
+console.log("bottomTool", layerConfig.transConfig)
+
+function transformLayerConfig(layerConfig) {
+  return layerConfig.layers
+    .filter(layer => layer.id === 'thematicLayer') // 只处理专题图层
+    .map(layer => {
+      // 提取除了sourceId之外的layerParams属性值
+      const { sourceId, ...otherParams } = layer.layerParams;
+      const values = Object.values(otherParams);
+      
+      // 用下划线连接
+      const id = values.join('_');
+      
+      return {
+        id,
+        label: layer.label,
+        checked: true
+      };
+    });
+}
+
+// 使用示例
+const layerSelect = ref(transformLayerConfig(layerConfig.transConfig));
+
 let showLayerPanel = ref(false)
-const layerSelect = ref([
-  { id: 'polygon-contracted-fill-layer_polygon-contracted-outline-layer', label: '耘智保地块', checked: true },
-  { id: 'polygon-field-fill-layer_polygon-field-outline-layer', label: '勾勒地块', checked: true },
-])
 
 function onLayerChange(layer) {
   emit('layerSelectStatus', layer)

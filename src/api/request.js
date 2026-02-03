@@ -7,7 +7,7 @@
 import axios from 'axios';
 
 // 创建一个通用的请求实例生成函数
-const createInstance = (baseURL = 'http://47.120.78.8:82/py/') => {
+const createInstance = (baseURL = 'https://gis.chlings.top/py/') => {
   const instance = axios.create({
     baseURL: baseURL,
     timeout: 15000000,

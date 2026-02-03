@@ -27,6 +27,7 @@ import { RouterView } from 'vue-router'
   height: 100vh;
 }
 
+/* Element Plus 组件样式优化 */
 .el-select__wrapper.el-tooltip__trigger {
   background-color: #1B2638;
 }

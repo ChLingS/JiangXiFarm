@@ -12,8 +12,8 @@
       <div class="panel-content" v-show="!isCollapsed">
         <!-- 地区选择 -->
         <div class="area-select">
-          <el-cascader v-model="shi_xian" :options="shi_xian_options" @change="handleChange" placeholder="请选择市县" />
-          <el-cascader v-model="zhen_cun" :options="zhen_cun_options" @change="handleChange" placeholder="请选择镇村" />
+          <el-cascader v-model="shi_xian" :options="shi_xian_options" :loading="loadingShiXian" @change="handleChange" placeholder="请选择市县" />
+          <el-cascader v-model="zhen_cun" :options="zhen_cun_options" :loading="loadingZhenCun" :disabled="loadingZhenCun || zhen_cun_options.length===0" @change="handleChange" placeholder="请选择镇村" />
         </div>
 
         <!-- 过滤条件 -->
@@ -25,7 +25,7 @@
             </div>
             <div class="filter-item">
               <el-select v-model="selectType" placeholder="作物类型" clearable popper-class="custom-select">
-                <el-option v-for="item in cropType" :key="item.value" :label="item.label" :value="item.value" />
+                <el-option v-for="item in zw" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </div>
           </div>
@@ -37,7 +37,7 @@
               </el-select>
             </div>
             <div class="filter-item">
-              <el-input v-model="searchText" placeholder="请输入搜索内容" class="custom-input">
+              <el-input v-model="searchText" :disabled="!selectField" placeholder="请输入搜索内容" class="custom-input">
                 <template #prefix>
                   <i class="iconfont icon-sousuo"></i>
                 </template>
@@ -47,8 +47,8 @@
 
           <!-- 操作按钮 -->
           <div class="operation-buttons">
-            <el-button type="primary" class="custom-button">查询</el-button>
-            <el-button type="default" class="custom-button reset-btn">重置</el-button>
+            <el-button type="primary" class="custom-button" @click="doSearch">查询</el-button>
+            <el-button type="default" class="custom-button reset-btn" @click="doReset">重置</el-button>
           </div>
         </div>
       </div>
@@ -57,70 +57,199 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { JiangXiApi } from '../../api/api.js';
+
+const emit = defineEmits(['update:filters', 'search', 'reset']);
 
 const isCollapsed = ref(false);
-let shi_xian = ref([]);
-let zhen_cun = ref([]);
+let shi_xian = ref([]); // cascader value: [shi, xian]
+let zhen_cun = ref([]); // cascader value: [zhen, cun]
 const selectedMonth = ref('');
 const selectType = ref('');
 const selectField = ref('');
 const searchText = ref('');
 
-const shi_xian_options = ref([
-  {
-    value: '南昌市',
-    label: '南昌市',
-    children: [
-      { value: '东湖区', label: '东湖区' },
-      { value: '西湖区', label: '西湖区' },
-    ],
-  },
-  {
-    value: '九江市',
-    label: '九江市',
-    children: [
-      { value: '濂溪区', label: '濂溪区' },
-      { value: '浔阳区', label: '浔阳区' },
-    ],
-  },
-]);
+const shi_xian_options = ref([]);
+const zhen_cun_options = ref([]);
+const loadingShiXian = ref(false);
+const loadingZhenCun = ref(false);
 
-const zhen_cun_options = ref([
-  {
-    value: '东湖区',
-    label: '东湖区',
-    children: [
-      { value: '小蓝镇', label: '小蓝镇' },
-      { value: '彭桥镇', label: '彭桥镇' },
-    ],
-  },
-  {
-    value: '西湖区',
-    label: '西湖区',
-    children: [
-      { value: '文教镇', label: '文教镇' },
-      { value: '莲塘镇', label: '莲塘镇' },
-    ],
-  },
-]);
+// build shi/xian options from API format: { data: [ { shi: '宜春市', xian: ['丰城市'] } ] }
+const buildShiXianOptions = (data = []) => {
+  return data.map(item => {
+    const shi = item.shi;
+    const xians = Array.isArray(item.xian) ? item.xian : [];
+    return {
+      value: shi,
+      label: shi,
+      children: xians.map(x => ({ value: x, label: x }))
+    };
+  });
+};
 
-const cropType = ref([
-  { value: 'rice', label: '水稻' },
-  { value: 'corn', label: '玉米' },
-  { value: 'wheat', label: '小麦' },
-  { value: 'cotton', label: '棉花' },
+// build zhen/cun options from API format: { data: [ { zhen: '小港镇', cun: ['青周村委会'] } ], shi, xian }
+const buildZhenCunOptions = (data = []) => {
+  return data.map(item => {
+    const zhen = item.zhen;
+    const cuns = Array.isArray(item.cun) ? item.cun : [];
+    return {
+      value: zhen,
+      label: zhen,
+      children: cuns.map(c => ({ value: c, label: c }))
+    };
+  });
+};
+
+const loadShiXianOptions = async () => {
+  loadingShiXian.value = true;
+  try {
+    const res = await JiangXiApi.getShiXianDivison();
+    const list = res?.data || [];
+    shi_xian_options.value = buildShiXianOptions(list);
+  } catch (err) {
+    console.error('getShiXianDivison error', err);
+    shi_xian_options.value = [];
+  } finally {
+    loadingShiXian.value = false;
+  }
+};
+
+const loadZhenCunOptions = async (shi, xian) => {
+  loadingZhenCun.value = true;
+  try {
+    const res = await JiangXiApi.getZhenCunDivison(shi, xian);
+    // API 可能返回 { data: [...] , shi, xian } 或者 data 本身就是数组
+    let list = [];
+    if (!res) {
+      list = [];
+    } else if (Array.isArray(res)) {
+      list = res;
+    } else if (Array.isArray(res.data)) {
+      list = res.data;
+    } else if (res.data && typeof res.data === 'object') {
+      // 有时后端会把单个对象放在 data 字段里
+      list = [res.data];
+    }
+
+    // 规范化每项：若后端返回的是 { zhen: 'xx', cun: [...] }
+    zhen_cun_options.value = buildZhenCunOptions(list || []);
+  } catch (err) {
+    console.error('getZhenCunDivison error', err);
+    zhen_cun_options.value = [];
+  } finally {
+    loadingZhenCun.value = false;
+  }
+};
+
+onMounted(() => {
+  loadShiXianOptions();
+});
+
+// when shi_xian changes, reset zhen/cun and load new zhen options if city+county selected
+watch(shi_xian, (newVal) => {
+  // Only load zhen/cun when both shi and xian are selected (two-level selection)
+  if (Array.isArray(newVal) && newVal.length === 2 && newVal[0] && newVal[1]) {
+    // reset previous selection and options then load new ones
+    zhen_cun.value = [];
+    zhen_cun_options.value = [];
+    loadZhenCunOptions(newVal[0], newVal[1]);
+    emitFilters();
+    return;
+  }
+
+  // If selection is cleared, also clear dependent values/options
+  if (!newVal || (Array.isArray(newVal) && newVal.length === 0)) {
+    zhen_cun.value = [];
+    zhen_cun_options.value = [];
+    emitFilters();
+  }
+}, { deep: true });
+
+// emit current filters to parent
+const emitFilters = () => {
+  const [shi, xian] = Array.isArray(shi_xian.value) ? shi_xian.value : [];
+  const [zhen, cun] = Array.isArray(zhen_cun.value) ? zhen_cun.value : [];
+  const payload = {
+    shi: shi || '',
+    xian: xian || '',
+    zhen: zhen || '',
+    cun: cun || '',
+    month: selectedMonth.value || '',
+    zw: selectType.value || '',
+    searchField: selectField.value || '',
+    searchText: searchText.value || ''
+  };
+  emit('update:filters', payload);
+};
+
+// watch other filter inputs and emit updates
+watch([selectedMonth, selectType, selectField, searchText, zhen_cun], () => {
+  emitFilters();
+});
+
+// 当搜索字段被清空时，自动清除搜索文本并触发筛选更新
+watch(selectField, (val) => {
+  if (!val) {
+    searchText.value = '';
+    emitFilters();
+  }
+});
+
+const zw = ref([
+  { value: '水稻', label: '水稻' },
+  { value: '玉米', label: '玉米' },
+  { value: '小麦', label: '小麦' },
+  { value: '棉花', label: '棉花' },
 ]);
 
 const filterField = ref([
-  { value: 'contractNumber', label: '保单号' },
-  { value: 'farmerName', label: '农户姓名' },
-  { value: 'idNumber', label: '身份证号' },
+  { value: 'bdh', label: '保单号' },
+  { value: 'xm', label: '农户姓名' },
+  { value: 'sfz', label: '身份证号' },
 ]);
 
 const handleChange = () => {
-  // 处理变化
+  emitFilters();
 };
+
+const doSearch = () => {
+  emit('search', {
+    filters: getCurrentFilters()
+  });
+};
+
+const doReset = () => {
+  shi_xian.value = [];
+  zhen_cun.value = [];
+  zhen_cun_options.value = [];
+  selectedMonth.value = '';
+  selectType.value = '';
+  selectField.value = '';
+  searchText.value = '';
+  emit('reset');
+  emitFilters();
+};
+
+const getCurrentFilters = () => {
+  const [shi, xian] = Array.isArray(shi_xian.value) ? shi_xian.value : [];
+  const [zhen, cun] = Array.isArray(zhen_cun.value) ? zhen_cun.value : [];
+  return {
+    shi: shi || '',
+    xian: xian || '',
+    zhen: zhen || '',
+    cun: cun || '',
+    month: selectedMonth.value || '',
+    zw: selectType.value || '',
+    searchField: selectField.value || '',
+    searchText: searchText.value || ''
+  };
+};
+
+defineExpose({
+  reset: doReset,
+  getCurrentFilters
+});
 </script>
 
 <style scoped>

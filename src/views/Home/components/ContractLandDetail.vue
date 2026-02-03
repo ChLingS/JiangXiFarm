@@ -1,162 +1,127 @@
 <template>
-  <div 
-    ref="detailCard"
-    class="tech-card"
-    :class="{ 'minimized': isMinimized }"
-    :style="{
-      top: position.y + 'px',
-      left: position.x + 'px',
-      zIndex: zIndex
-    }"
-  >
+  <div ref="detailCard" class="tech-card" :class="{ 'minimized': isMinimized }" :style="{
+    top: position.y + 'px',
+    left: position.x + 'px',
+    zIndex: zIndex
+  }">
     <!-- 标题栏 -->
-    <div 
-      class="tech-header"
-      @mousedown="startDrag"
-      @touchstart="startDrag"
-    >
+    <div class="tech-header" @mousedown="startDrag" @touchstart="startDrag">
       <div class="header-left">
         <div class="header-icon">📍</div>
         <div class="header-title">地块详情</div>
-        <div v-if="featureProperties" class="status-badge" :class="getStatusClass(featureProperties.statuses)">
-          {{ getStatusText(featureProperties.statuses) }}
+        <div v-if="featureProperties" class="status-badge status-insured">
+          已投保
         </div>
       </div>
-      
+
       <div class="header-actions">
-        <button 
-          class="action-btn minimize-btn"
-          @click="toggleMinimize"
-          :title="isMinimized ? '展开' : '最小化'"
-        >
-          {{ isMinimized ? '⬆️' : '⬇️' }}
+        <button class="action-btn minimize-btn" @click="toggleMinimize" :title="isMinimized ? '展开' : '最小化'">
+          {{ isMinimized ? '⬆' : '⬇' }}
         </button>
-        <button 
-          class="action-btn close-btn"
-          @click="handleClose"
-          title="关闭"
-        >
+        <button class="action-btn close-btn" @click="handleClose" title="关闭">
           ✕
         </button>
       </div>
     </div>
-    
+
     <!-- 内容区域 -->
     <div v-if="!isMinimized" class="tech-content">
-      <!-- 地块信息 -->
-      <div class="info-section">
-        <div class="section-header">
-          <div class="section-icon">📋</div>
-          <h3>地块信息</h3>
-        </div>
-        
-        <div v-if="featureProperties" class="info-grid">
-          <div class="info-row">
-            <span class="info-label">位置：</span>
-            <span class="info-value location">{{ featureLocation }}</span>
+      <!-- 基本信息卡片 -->
+      <div class="basic-info-cards">
+        <!-- 地块信息卡片 -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="info-card-icon">📋</div>
+            <h3>地块信息</h3>
           </div>
-          
-          <div class="info-row">
-            <span class="info-label">ID：</span>
-            <span class="info-value id-value">{{ featureProperties.id }}</span>
-          </div>
-          
-          <div v-if="featureProperties.area" class="info-row">
-            <span class="info-label">面积：</span>
-            <span class="info-value highlight">{{ featureProperties.area }}亩</span>
-          </div>
-          
-          <div v-if="featureProperties.elevation" class="info-row">
-            <span class="info-label">海拔：</span>
-            <span class="info-value">{{ featureProperties.elevation }}m</span>
-          </div>
-          
-          <div v-if="featureProperties.soil_type" class="info-row">
-            <span class="info-label">土壤：</span>
-            <span class="info-value">{{ featureProperties.soil_type }}</span>
-          </div>
-          
-          <div v-if="featureProperties.message && featureProperties.message !== '无'" class="info-row full-row">
-            <span class="info-label">备注：</span>
-            <span class="info-value">{{ featureProperties.message }}</span>
+          <div class="info-card-content">
+            <div class="info-item">
+              <div class="info-label">地块编码</div>
+              <div class="info-value code">{{ featureProperties?.dkbm || '--' }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">保单号</div>
+              <div class="info-value code">{{ featureProperties?.bdh || '--' }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">作物类型</div>
+              <div class="info-value">{{ featureProperties?.zw || '--' }}</div>
+            </div>
+            <div class="info-item" style="flex-direction: row; justify-content: space-between;">
+              <div>
+                <div class="info-label">承保面积(亩)</div>
+                <div class="info-value highlight">{{ parseFloat(featureProperties?.area || 0).toFixed(2) }}</div>
+              </div>
+              <div>
+                <div class="info-label">实际面积(亩)</div>
+                <div class="info-value highlight">{{ computedArea }}</div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div v-else class="no-data">
-          <div class="no-data-icon">📭</div>
-          <p>请点击地图上的地块</p>
-        </div>
-      </div>
-      
-      <!-- 保单信息 -->
-      <div class="info-section">
-        <div class="section-header">
-          <div class="section-icon">📄</div>
-          <h3>保单信息</h3>
-        </div>
-        
-        <div v-if="insuranceInfo" class="info-grid">
-          <div class="info-row">
-            <span class="info-label">保单号：</span>
-            <span class="info-value">{{ insuranceInfo.policyNo }}</span>
+
+        <!-- 农户信息卡片 -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="info-card-icon">👤</div>
+            <h3>农户信息</h3>
           </div>
-          
-          <div class="info-row">
-            <span class="info-label">被保险人：</span>
-            <span class="info-value">{{ insuranceInfo.insured }}</span>
+          <div class="info-card-content">
+            <div class="info-item">
+              <div class="info-label">姓名</div>
+              <div class="info-value">{{ featureProperties?.xm || '--' }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">身份证号</div>
+              <div class="info-value code">{{ formatIdCard(featureProperties?.sfz || '') }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">手机号</div>
+              <div class="info-value">{{ formatPhone(featureProperties?.sjh || '') }}</div>
+            </div>
           </div>
-          
-          <div class="info-row">
-            <span class="info-label">承保时间：</span>
-            <span class="info-value">{{ insuranceInfo.insuredTime }}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">承保面积：</span>
-            <span class="info-value highlight">{{ insuranceInfo.insuredArea }}亩</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">承保标的：</span>
-            <span class="info-value">{{ insuranceInfo.insuredTarget }}</span>
-          </div>
-          
-          <div class="info-row">
-            <span class="info-label">总保费：</span>
-            <span class="info-value premium">{{ insuranceInfo.premium }}元</span>
-          </div>
-        </div>
-        
-        <div v-else class="no-data">
-          <div class="no-data-icon">📋</div>
-          <p>暂无保单信息</p>
         </div>
       </div>
-      
-      <!-- 操作按钮 -->
+
+      <!-- 位置信息（紧凑显示） -->
+      <div v-if="locationText" class="location-section">
+        <div class="location-text" :title="locationText">
+          <span class="location-icon">📍</span>
+          {{ locationText }}
+        </div>
+      </div>
+      <div>
+        <LineChart :zsData="zsData"></LineChart>
+      </div>
+      <!-- 操作按钮（只保留编辑按钮） -->
       <div v-if="featureProperties" class="action-buttons">
-        <button class="btn secondary" @click="handleViewDetails">
-          查看详情
-        </button>
         <button class="btn primary" @click="handleEdit">
-          编辑
+          <span class="btn-icon">✏️</span>
+          编辑信息
         </button>
       </div>
     </div>
-    
+
     <!-- 最小化状态 -->
     <div v-else class="minimized-view" @click="toggleMinimize">
-      <div class="min-icon">📍</div>
-      <div class="min-text">地块详情</div>
-      <div v-if="featureProperties" class="min-location">
-        {{ featureLocationShort }}
+      <div class="min-content">
+        <div class="min-icon">📍</div>
+        <div class="min-info">
+          <div class="min-title">{{ featureProperties?.zw || '地块' }}</div>
+          <div class="min-detail">
+            <span class="min-location">{{ getShortLocation() }}</span>
+            <span class="min-area">{{ parseFloat(featureProperties?.area || 0).toFixed(2) }}亩</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, toRefs } from 'vue'
+import { area } from '@turf/turf'
+import LineChart from '@/components/ZsLineChart.vue'
 
 const props = defineProps({
   featureProperties: {
@@ -173,7 +138,8 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['close', 'view-details', 'edit'])
+const { featureProperties } = toRefs(props)
+const emit = defineEmits(['close', 'edit'])
 
 // 响应式数据
 const detailCard = ref(null)
@@ -183,90 +149,99 @@ const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 const zIndex = ref(1000)
 
-// 计算属性
-const featureLocation = computed(() => {
-  if (!props.featureProperties) return ''
-  const { shi_12, xian_12, zhen_12, cun } = props.featureProperties
-  return `${shi_12 || ''}${xian_12 || ''}${zhen_12 || ''}${cun || ''}` || '未知位置'
-})
+// 计算面积（亩）
+const computedArea = computed(() => {
+  let geometry = featureProperties.value.geometry
 
-const featureLocationShort = computed(() => {
-  if (!props.featureProperties) return ''
-  const { xian_12, zhen_12 } = props.featureProperties
-  return `${xian_12 || ''}${zhen_12 || ''}` || '未知位置'
-})
-
-const insuranceInfo = computed(() => {
-  if (!props.featureProperties) return null
-  
-  // 模拟保单数据
-  const insuranceDataMap = {
-    224871: {
-      policyNo: 'PHSQ20243624N00000327',
-      insured: '林建国',
-      insuredTime: '2024-02-03',
-      insuredArea: '600',
-      insuredTarget: '油菜',
-      premium: '7200'
-    },
-    224872: {
-      policyNo: 'PHSQ20243624N00000456',
-      insured: '王建军',
-      insuredTime: '2024-03-15',
-      insuredArea: '450',
-      insuredTarget: '水稻',
-      premium: '5400'
-    }
+  if (!geometry || (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon')) {
+    return 0
   }
-  
-  return insuranceDataMap[props.featureProperties.id] || null
+
+  try {
+    // 计算面积（平方米）
+    const areaInSquareMeters = area(geometry)
+
+    // 1亩 = 666.6666667平方米
+    const MU_TO_SQUARE_METERS = 666.6666667
+
+    // 转换为亩
+    const areaInMu = areaInSquareMeters / MU_TO_SQUARE_METERS
+    console.log("开始计算")
+
+    // 格式化为两位小数
+    return Number(areaInMu.toFixed(2))
+  } catch (error) {
+    console.error('计算面积时出错:', error)
+    return 0
+  }
 })
 
-// 方法
-const getStatusText = (status) => {
-  const statusMap = { 0: '未签约', 1: '已签约', 2: '已投保', 3: '已理赔' }
-  return statusMap[status] || '未知'
+// 使用计算属性，确保响应式更新
+const zsData = computed(() => {
+  if (!featureProperties.value || !featureProperties.value.zs) {
+    return []
+  }
+  return featureProperties.value.zs
+})
+
+// 计算属性
+const locationText = computed(() => {
+  if (!featureProperties.value) return ''
+  const { sheng, shi, xian, zhen, cun } = featureProperties.value
+  return [sheng, shi, xian, zhen, cun].filter(Boolean).join('') || ''
+})
+
+// 辅助方法
+const formatIdCard = (id) => {
+  if (!id || id.length !== 18) return id || '--'
+  return `${id.substring(0, 6)}******${id.substring(12)}`
 }
 
-const getStatusClass = (status) => {
-  const classMap = { 0: 'status-pending', 1: 'status-active', 2: 'status-insured', 3: 'status-claimed' }
-  return classMap[status] || 'status-unknown'
+const formatPhone = (phone) => {
+  if (!phone || phone.length !== 11) return phone || '--'
+  return `${phone.substring(0, 3)}****${phone.substring(7)}`
 }
 
+const getShortLocation = () => {
+  if (!featureProperties.value) return ''
+  const { xian, zhen } = featureProperties.value
+  return `${xian || ''}${zhen || ''}`.slice(0, 8) || '未知'
+}
+
+// 拖拽方法
 const startDrag = (e) => {
   zIndex.value = 1001
   isDragging.value = true
-  
+
   const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX
   const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY
-  
+
   dragOffset.value = {
     x: clientX - position.value.x,
     y: clientY - position.value.y
   }
-  
+
   e.preventDefault()
 }
 
 const handleDrag = (e) => {
   if (!isDragging.value) return
-  
+
   const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX
   const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY
-  
+
   position.value = {
     x: clientX - dragOffset.value.x,
     y: clientY - dragOffset.value.y
   }
-  
-  // 限制在窗口内
+
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
-  
+
   if (detailCard.value) {
     const cardWidth = detailCard.value.offsetWidth
     const cardHeight = detailCard.value.offsetHeight
-    
+
     position.value.x = Math.max(0, Math.min(position.value.x, windowWidth - cardWidth))
     position.value.y = Math.max(0, Math.min(position.value.y, windowHeight - cardHeight))
   }
@@ -276,6 +251,7 @@ const stopDrag = () => {
   isDragging.value = false
 }
 
+// 操作方法
 const toggleMinimize = () => {
   isMinimized.value = !isMinimized.value
 }
@@ -284,12 +260,8 @@ const handleClose = () => {
   emit('close')
 }
 
-const handleViewDetails = () => {
-  emit('view-details', props.featureProperties)
-}
-
 const handleEdit = () => {
-  emit('edit', props.featureProperties)
+  emit('edit', featureProperties.value)
 }
 
 // 生命周期
@@ -308,15 +280,18 @@ onUnmounted(() => {
 })
 </script>
 
+
 <style scoped>
+/* 卡片基础样式 */
 .tech-card {
   position: fixed;
-  width: 380px;
+  width: 480px;
+  max-height: 80vh;
   background: rgba(18, 25, 45, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(64, 156, 255, 0.3);
   border-radius: 12px;
-  box-shadow: 
+  box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(64, 156, 255, 0.1),
     0 0 20px rgba(64, 156, 255, 0.1);
@@ -324,6 +299,8 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   color: #e0e0e0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 标题栏 */
@@ -331,46 +308,38 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 16px;
   background: rgba(10, 18, 35, 0.8);
   border-bottom: 1px solid rgba(64, 156, 255, 0.2);
   cursor: move;
+  flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 .header-icon {
-  font-size: 20px;
+  font-size: 18px;
   color: #409cff;
 }
 
 .header-title {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   color: #fff;
 }
 
 .status-badge {
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-}
-
-.status-pending {
-  background: rgba(255, 170, 0, 0.2);
-  color: #ffaa00;
-  border: 1px solid rgba(255, 170, 0, 0.3);
-}
-
-.status-active {
-  background: rgba(0, 200, 83, 0.2);
-  color: #00c853;
-  border: 1px solid rgba(0, 200, 83, 0.3);
 }
 
 .status-insured {
@@ -379,25 +348,19 @@ onUnmounted(() => {
   border: 1px solid rgba(64, 156, 255, 0.3);
 }
 
-.status-claimed {
-  background: rgba(156, 39, 176, 0.2);
-  color: #9c27b0;
-  border: 1px solid rgba(156, 39, 176, 0.3);
-}
-
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.1);
   color: #e0e0e0;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -416,169 +379,276 @@ onUnmounted(() => {
 
 /* 内容区域 */
 .tech-content {
-  padding: 20px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
-.info-section {
-  margin-bottom: 24px;
+.tech-content::-webkit-scrollbar {
+  width: 4px;
 }
 
-.section-header {
+.tech-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.tech-content::-webkit-scrollbar-thumb {
+  background: rgba(64, 156, 255, 0.3);
+  border-radius: 2px;
+}
+
+.tech-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(64, 156, 255, 0.5);
+}
+
+/* 基本信息卡片 */
+.basic-info-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.info-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(64, 156, 255, 0.2);
+  gap: 6px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.section-header h3 {
+.info-card-header h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: #fff;
 }
 
-.section-icon {
+.info-card-icon {
   color: #409cff;
-  font-size: 18px;
-}
-
-.info-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.info-row {
-  display: flex;
   font-size: 14px;
-  line-height: 1.5;
 }
 
-.info-row.full-row {
+.info-card-content {
+  padding: 12px;
+  display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 36px;
 }
 
 .info-label {
-  flex: 0 0 80px;
+  font-size: 11px;
   color: #8a9ba8;
   font-weight: 500;
 }
 
 .info-value {
-  flex: 1;
+  font-size: 12px;
   color: #e0e0e0;
-  word-break: break-word;
+  word-break: break-all;
+  min-height: 18px;
 }
 
-.location {
-  color: #fff;
-  font-weight: 500;
-}
-
-.id-value {
+.info-value.code {
   font-family: 'Courier New', monospace;
   color: #00e5ff;
   font-weight: 500;
+  font-size: 11px;
+  background: rgba(0, 229, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
 }
 
-.highlight {
+.info-value.highlight {
   color: #00e676;
   font-weight: 600;
+  font-size: 13px;
+  background: rgba(0, 230, 118, 0.1);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 230, 118, 0.2);
 }
 
-.premium {
-  color: #ff4081;
-  font-weight: 600;
+/* 位置信息 */
+.location-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
-/* 无数据状态 */
-.no-data {
-  text-align: center;
-  padding: 20px;
+.location-section:hover {
+  border-color: rgba(64, 156, 255, 0.3);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.location-text {
+  font-size: 12px;
   color: #8a9ba8;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.no-data-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-  opacity: 0.5;
+.location-icon {
+  color: #409cff;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* 操作按钮 */
 .action-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(64, 156, 255, 0.2);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .btn {
-  flex: 1;
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .primary {
   background: linear-gradient(135deg, #409cff, #0066cc);
   color: white;
+  border: 1px solid rgba(64, 156, 255, 0.3);
 }
 
 .primary:hover {
   background: linear-gradient(135deg, #4da6ff, #0077e6);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(64, 156, 255, 0.3);
+  border-color: rgba(64, 156, 255, 0.5);
 }
 
-.secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+.btn-icon {
+  font-size: 13px;
+  line-height: 1;
 }
 
 /* 最小化状态 */
 .minimized-view {
-  display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  background: rgba(10, 18, 35, 0.8);
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(10, 18, 35, 0.9), rgba(20, 30, 55, 0.9));
   border: 1px solid rgba(64, 156, 255, 0.2);
   cursor: pointer;
-  gap: 12px;
+  transition: all 0.3s ease;
+  border-left: 3px solid #409cff;
+  flex-shrink: 0;
+}
+
+.minimized-view:hover {
+  background: linear-gradient(135deg, rgba(20, 30, 55, 0.9), rgba(30, 40, 65, 0.9));
+  border-color: rgba(64, 156, 255, 0.3);
+  transform: translateX(2px);
+}
+
+.min-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
 }
 
 .min-icon {
+  font-size: 16px;
   color: #409cff;
-  font-size: 18px;
+  line-height: 1;
 }
 
-.min-text {
-  font-weight: 600;
-  font-size: 14px;
-  color: #fff;
+.min-info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 36px;
+}
+
+.min-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: #fff;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.min-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .min-location {
-  font-size: 12px;
   color: #8a9ba8;
-  max-width: 100px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 80px;
+  line-height: 1.2;
+}
+
+.min-area {
+  color: #409cff;
+  background: rgba(64, 156, 255, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(64, 156, 255, 0.2);
+  font-weight: 600;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 /* 响应式调整 */
@@ -587,14 +657,11 @@ onUnmounted(() => {
     width: 90vw;
     left: 5vw !important;
     right: 5vw;
+    max-height: 85vh;
   }
-  
-  .tech-content {
-    padding: 16px;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
+
+  .basic-info-cards {
+    grid-template-columns: 1fr;
   }
 }
 </style>

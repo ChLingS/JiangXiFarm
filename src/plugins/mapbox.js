@@ -46,13 +46,6 @@ export default {
             ],
             tileSize: 256,
           },
-          // 'tdt-label': {
-          //   type: 'raster',
-          //   tiles: [
-          //     `http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${TIAN_DI_TU}`
-          //   ],
-          //   tileSize: 256,
-          // }
         },
         layers: [
           {
@@ -62,13 +55,6 @@ export default {
             minzoom: 0,
             maxzoom: 20
           },
-          // {
-          //   id: 'tdt-label-layer',
-          //   type: 'raster',
-          //   source: 'tdt-label',
-          //   minzoom: 0,
-          //   maxzoom: 20
-          // }
         ]
       },
       center: [116, 28.5],

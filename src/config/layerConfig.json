@@ -8,6 +8,7 @@
                 "outlineLayerId": "polygon-outline-layer",
                 "textLayerId": "polygon-text-layer"
             },
+            "label":"行政区划",
             "visible": true,
             "zIndex": 0,
             "apiName": "getAreaByName",
@@ -20,6 +21,7 @@
                 "fillLayerId": "field-fill-layer",
                 "outlineLayerId": "field-outline-layer"
             },
+            "label":"勾勒地块",
             "layerStyle": {
                 "fillLayerStyle": {
                     "fill-color": "#ffffe0",
@@ -55,10 +57,28 @@
                 "fillLayerId": "contract-fill-layer",
                 "outlineLayerId": "contract-outline-layer"
             },
+            "label":"耘智保地块",
             "layerStyle": {
                 "fillLayerStyle": {
-                    "fill-color": "#7cfc00",
-                    "fill-opacity": 0.2
+                    "fill-color": [
+                        "match",
+                        [
+                            "get",
+                            "zs"
+                        ],
+                        1,
+                        "#d9f0a3",
+                        2,
+                        "#78c679",
+                        3,
+                        "#31a354",
+                        4,
+                        "#006837",
+                        5,
+                        "#004529",
+                        "#f7fcf5"
+                    ],
+                    "fill-opacity": 0.3
                 },
                 "outlineLayerStyle": {
                     "line-color": [
@@ -91,7 +111,7 @@
                 }
             },
             "visible": false,
-            "zIndex": 1,
+            "zIndex": 2,
             "apiName": "getContractedLandByName",
             "clickable": true
         }

@@ -6,7 +6,7 @@ import * as turf from '@turf/turf'
 
 /**
  * 管理地图边界图层的Hook
- * @param {import('@/models/AreaQueryManager').default} areaMgr - 行政区管理器实例
+ * @param {import('@/plugins/AreaQueryManager').default} areaMgr - 行政区管理器实例
  * @param {string} apiName - 用于获取边界数据的API名称
  * @param {Object} layerParams - 传递给API的其他参数
  */
