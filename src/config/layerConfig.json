@@ -59,7 +59,7 @@
                 "fillLayerId": "contract-fill-layer",
                 "outlineLayerId": "contract-outline-layer"
             },
-            "label":"耘智保地块",
+            "label":"承保地块", 
             "layerStyle": {
                 "fillLayerStyle": {
                     "fill-color": [

@@ -10,7 +10,7 @@
   <div>
 
     <MapControl />
-    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" :transConfig="layerConfig"/>
+    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" :transConfig="layers"/>
 
     <component :is="activeComponent" v-if="activeComponent" />
 
@@ -36,12 +36,12 @@ const { loadThematicLayer, updateThematicLayerData, setHighlight } = thematicLay
 provide('updateThematicLayerData', updateThematicLayerData)
 provide('setHighlight', setHighlight)
 
-// import layerConfig from '@/config/layerConfig.json'
+
 import layers from '@/plugins/layerStatusManager'
-console.log('layers', layers);
+// console.log('layers', layers);
 
 
-provide('layerConfig', layerConfig);
+provide('layers', layers);
 
 import clickController from '@/Hooks/LayerClickEventHandl';
 
@@ -56,7 +56,7 @@ const areaMgr = inject('areaManager')
 
 // 加载边界图层
 // 获取配置中的API名称
-const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
+const baseLayer = layers.getBaseLayer()
 const apiName = baseLayer.apiName
 const baseLayerParams = baseLayer ? baseLayer.layerParams : {}
 console.log('Base Layer Params:', baseLayerParams);
@@ -66,7 +66,7 @@ layerInitialize()
 
 
 // 获取专题图层配置
-const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer').sort((a, b) => a.zIndex - b.zIndex)
+const thematicLayer = layers.getThematicLayers()
 for (const layer of thematicLayer) {
   console.log(`Thematic Layer ID: ${layer.id}, API Name: ${layer.apiName}`);
   const layerParams = layer.layerParams || {};
@@ -74,10 +74,9 @@ for (const layer of thematicLayer) {
   loadThematicLayer(layerParams, layerStyle)
 }
 // 处理图层点击事件
-const {initMapClickListener, 
-      getLastThematicLayerProps, 
-      cleanupMapClickListener} = clickController(areaMgr, layerConfig,
-                                                updateBoundaryLayerData, 
+const {initMapClickListener,
+      cleanupMapClickListener} = clickController(areaMgr, thematicLayer,
+                                                updateBoundaryLayerData,
                                                 updateThematicLayerData,
                                                 setHighlight);
 

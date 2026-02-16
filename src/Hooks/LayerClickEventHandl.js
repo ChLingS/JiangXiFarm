@@ -6,7 +6,7 @@ import { inject } from "vue";
  * @param {Function} baseLayerUpDate - 用于更新底图边界数据的函数
  */
 
-export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
+export default (areaMgr, thematicLayers, baseLayerUpDate, thematicLayerUpDate,
   setHighlight) => {
   const { map } = inject('$scene_map');
 
@@ -48,7 +48,7 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
           // 点击空白处，触发边界上升事件
           if (areaMgr.getLength() > 1) {
             console.log("上升")
-            layerConfig.layers.filter(layer => layer.id === 'thematicLayer').forEach(layer => {
+            thematicLayers.forEach(layer => {
               const { sourceId, ...otherParams } = layer.layerParams;
               const layerIds = Object.values(otherParams)
               for (let el of layerIds) {
@@ -85,17 +85,17 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
           }
           // 将加载专题数据移动到点击事件里
           if (areaMgr.getLength() == 5) {
-            layerConfig.layers.filter(layer => layer.type === 'thematicLayer').forEach(layer => {
+            thematicLayers.forEach(layer => {
               const layerApiName = layer.apiName
               const layerParams = layer.layerParams || {};
               thematicLayerUpDate(layerApiName, areaMgr.toNames(), layerParams)
               console.log("加载", layerApiName);
               // 提取除了sourceId之外的layerParams属性值
-              const { sourceId, ...otherParams } = layer.layerParams;
-              const layerIds = Object.values(otherParams)
-              for (let el of layerIds) {
-                map.setLayoutProperty(el, 'visibility', 'visible');
-              }
+              // const { sourceId, ...otherParams } = layer.layerParams;
+              // const layerIds = Object.values(otherParams)
+              // for (let el of layerIds) {
+              //   map.setLayoutProperty(el, 'visibility', 'visible');
+              // }
             });
           }
           return;
@@ -132,7 +132,7 @@ export default (areaMgr, layerConfig, baseLayerUpDate, thematicLayerUpDate,
           //   filter: ["==", "bdh", props.bdh]
           // });
           // console.log('找到的值', searchFeatures);
-          
+
 
             // 如果有回调函数，则调用
             if (onThematicLayerClick && typeof onThematicLayerClick === 'function') {

@@ -76,7 +76,7 @@ const areaMgr = inject('areaManager')
 // 数据获取逻辑
 const fetchPolicyData = async () => {
   if (isLoading.value) return;
-  
+
   isLoading.value = true;
   try {
     // 构建符合后端 `getContractedListByAreaManager` 的额外参数
@@ -111,7 +111,7 @@ const fetchPolicyData = async () => {
     console.log('additionalParams', additionalParams, 'source', source);
 
     const response = await apiRegistry.execute('getContractedListByAreaManager', areaMgr, additionalParams)
-    
+
     if (response && response.success) {
       // 获取分页信息
       const pagination = response.data.pagination;
@@ -128,7 +128,7 @@ const fetchPolicyData = async () => {
         // 保留原始数据，便于后续使用
         originalData: el
       }));
-      
+
       policyList.value = dataList;
     }
   } catch (error) {
@@ -245,7 +245,7 @@ const formatCurrency = (value) => {
 <style scoped>
 .contraction-list-panel {
   position: absolute;
-  width: 430px; 
+  width: 430px;
   height: auto;
   max-height: 75vh;
   z-index: 3;

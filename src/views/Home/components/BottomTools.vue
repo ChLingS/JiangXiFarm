@@ -37,32 +37,23 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, defineProps } from 'vue'
+import { ref, defineEmits, inject } from 'vue'
 import Footer from '@/components/Footer.vue';
 
 const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
 
-const props = defineProps({
-  transConfig:{
-    type: Object,
-    default:()=>null
-  }
-})
+/** @type {import('@/plugins/layerStatusManager').default} */
+const layers = inject('layers');
 
-const layerConfig = props
-console.log("bottomTool", layerConfig.transConfig)
-
-function transformLayerConfig(layerConfig) {
-  return layerConfig.layers
-    .filter(layer => layer.id === 'thematicLayer') // 只处理专题图层
-    .map(layer => {
-      // 提取除了sourceId之外的layerParams属性值
-      const { sourceId, ...otherParams } = layer.layerParams;
+function transformLayerConfig(thematicLayers) {
+  return thematicLayers.map(layer => {
+    // 提取除了sourceId之外的layerParams属性值
+    const { sourceId, ...otherParams } = layer.layerParams;
       const values = Object.values(otherParams);
-      
+
       // 用下划线连接
       const id = values.join('_');
-      
+
       return {
         id,
         label: layer.label,
@@ -72,7 +63,8 @@ function transformLayerConfig(layerConfig) {
 }
 
 // 使用示例
-const layerSelect = ref(transformLayerConfig(layerConfig.transConfig));
+console.log('Transformed Layer Config:', layers.layerConfig);
+const layerSelect = ref(transformLayerConfig(layers.getThematicLayers()));
 
 let showLayerPanel = ref(false)
 

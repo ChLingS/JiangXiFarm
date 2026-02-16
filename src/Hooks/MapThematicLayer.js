@@ -49,7 +49,7 @@ export const useThematicLayerProvider = () => {
 
       // 根据搜索类型处理
       switch (searchType) {
-        case "id":
+        case "id": {
           // 直接使用传入的ID（强制转为字符串）
           const idValue = String(identifier);
           if (!idValue) throw new Error("Empty ID value");
@@ -58,8 +58,9 @@ export const useThematicLayerProvider = () => {
           map.setFeatureState({ source: sourceId, id: idValue }, { highlighted: true });
           featureIds.push({ sourceId, id: idValue });
           break;
+        }
 
-        case "bdh":
+        case "bdh": {
           // 查询BDH对应的要素ID
           console.log('query bdh, sourceId=', sourceId, 'map.getSource=', map.getSource(sourceId));
           // 注意：querySourceFeatures 只能查询已加载到地图上的数据
@@ -79,6 +80,7 @@ export const useThematicLayerProvider = () => {
             featureIds.push({ sourceId, id: el.id });
           });
           break;
+        }
 
         default:
           throw new Error(`Unsupported searchType: ${searchType}`);
@@ -145,6 +147,27 @@ export const useThematicLayerProvider = () => {
       })
     }
   };
+  /**
+   * @abstract 压缩
+   * @param {String} str 传入
+   * @returns String
+   */
+  function stableHash(str) {
+  // 使用 FNV-1a 哈希算法，产生更好的分布
+  let hash = 2166136261; // FNV偏移基础值
+
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+  }
+
+  // 确保结果为53位安全整数
+  const safeHash = Math.abs(hash % (2**53 - 1));
+
+  // 处理可能的负号（虽然Math.abs应该处理了）
+  return safeHash >>> 0;
+}
+
 
   /**
    * 更新专题图层数据
@@ -178,18 +201,33 @@ export const useThematicLayerProvider = () => {
         console.error(`未找到数据源: ${SOURCE_ID}`);
         return;
       }
-      console.log('newData', newData);
-      
+      // console.log('newData', newData);
+
       if ( newData.code === 1 || newData.features.length === 0) {
         source.setData({
           type: 'FeatureCollection',
           features: []
         });
       } else {
-        let featureId = 0;
+        console.log("newData", newData);
         // 当newData获取到数据后，更新数据源
-        const featuresWithIds = newData.features.map((orig) => {
-          const id = featureId++;
+        const featuresWithIds = newData.features.map((orig, index) => {
+          let id;
+
+          if (orig.properties && orig.properties.bdh) {
+            // 直接使用哈希值，假设 bdh 是唯一的
+            id = stableHash(orig.properties.bdh);
+          } else {
+            // 生成基于时间戳、索引和随机数的复合ID
+            const time = Date.now() % 1000000; // 时间戳后6位
+            const idx = index % 10000; // 索引后4位
+            const random = Math.floor(Math.random() * 10000); // 随机4位
+
+            id = time * 100000000 + idx * 10000 + random;
+
+            // 确保为正数
+            id = Math.abs(id % (2**53 - 1));
+          }
           const properties = {
             ...(orig.properties || {}),
             layerType: 'thematicLayer'
@@ -200,10 +238,22 @@ export const useThematicLayerProvider = () => {
             properties
           };
         });
+
+        // console.log('featuresWithIds', featuresWithIds);
+
         source.setData({
           type: 'FeatureCollection',
           features: featuresWithIds
         });
+
+        const { sourceId, ...otherParams } = layerParams;
+        const layerIds = Object.values(otherParams)
+        for (let el of layerIds) {
+          map.setLayoutProperty(el, 'visibility', 'visible');
+        }
+
+        // map.setLayoutProperty(SOURCE_ID, 'visibility', 'visible');
+
       }
       return true;
     } else {

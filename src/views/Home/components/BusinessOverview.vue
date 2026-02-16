@@ -13,9 +13,8 @@ import ContractionList from '@/components/businessComponents/ContractionList.vue
 import ContractionStatus from '@/components/businessComponents/ContractionStatus.vue';
 import AreaSelect from '@/components/businessComponents/AreaSelect.vue';
 
-const layerConfig = inject('layerConfig');
-const baseLayer = layerConfig.layers.find(layer => layer.id === 'baseLayer')
-const thematicLayer = layerConfig.layers.filter(layer => layer.id === 'thematicLayer').sort((a, b) => a.zIndex - b.zIndex)
+const layers = inject('layers')
+const thematicLayer = layers.getThematicLayers()
 
 const areaMgr = inject('areaManager');
 const areaRef = ref(null);
