@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import { createPinia } from 'pinia'
 
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -10,8 +11,9 @@ import AreaQueryManagerPlugin from './plugins/AreaQueryManager'
 import '@/api/api.js';
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(router).use(MapBox).use(ElementPlus).use(AreaQueryManagerPlugin, {
+app.use(router).use(pinia).use(MapBox).use(ElementPlus).use(AreaQueryManagerPlugin, {
   // 可选：传入初始值
   initial: ['江西省']
 })

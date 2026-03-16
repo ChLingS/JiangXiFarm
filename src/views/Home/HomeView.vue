@@ -22,6 +22,14 @@
 <script setup>
 import { ref, onMounted, watch, inject, shallowRef, onUnmounted, provide } from 'vue';
 
+const { map } = inject('$scene_map')
+
+import { useLayerStore } from '@/plugins/layerVisibilityManager'
+const layerStore = useLayerStore()
+layerStore.setMapInstance(map)
+layerStore.initialize()
+
+
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
 import ContractLandDetail from './components/ContractLandDetail.vue'
@@ -29,13 +37,14 @@ import Header from './components/Header.vue'
 import G2Charts from './components/G2Charts.vue';
 import BusinessOverview from './components/BusinessOverview.vue';
 
+
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
+
 import { useThematicLayerProvider } from '@/Hooks/MapThematicLayer';
 const thematicLayerService = useThematicLayerProvider();
 const { loadThematicLayer, updateThematicLayerData, setHighlight } = thematicLayerService;
 provide('updateThematicLayerData', updateThematicLayerData)
 provide('setHighlight', setHighlight)
-
 
 import layers from '@/plugins/layerStatusManager'
 // console.log('layers', layers);
@@ -45,9 +54,6 @@ provide('layers', layers);
 
 import clickController from '@/Hooks/LayerClickEventHandl';
 
-
-
-const { map } = inject('$scene_map')
 
 // 图层管理 — 使用 AreaQueryManager 以避免并发竞争
 /** @type {import('@/plugins/AreaQueryManager').default} */

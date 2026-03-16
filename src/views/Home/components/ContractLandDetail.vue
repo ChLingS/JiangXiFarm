@@ -90,8 +90,14 @@
           {{ locationText }}
         </div>
       </div>
-      <div>
-        <LineChart :zsData="zsData"></LineChart>
+      <div v-if="zsData && zsData.length" class="info-card">
+        <div class="info-card-header">
+          <div class="info-card-icon">📊</div>
+          <h3>涨势数据</h3>
+        </div>
+        <div class="info-card-content">
+          <LineChart :zsData="zsData"></LineChart>
+        </div>
       </div>
       <!-- 操作按钮（只保留编辑按钮） -->
       <div v-if="featureProperties" class="action-buttons">

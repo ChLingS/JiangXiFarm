@@ -2,7 +2,7 @@
   <div class="contraction-list-panel" :class="{ 'collapsed': isCollapsed }">
     <div class="panel-header">
       <div class="header-title">
-        保单列表
+        搜索筛选
       </div>
       <div class="collapse-icon">
         <i :class="['iconfont', isCollapsed ? 'icon-zhankai' : 'icon-shouqi']" @click="isCollapsed = !isCollapsed;"></i>

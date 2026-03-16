@@ -1,10 +1,12 @@
 import { inject, provide } from "vue";
 import apiRegistry from '@/api/apiRegistry'
-
+import { useLayerStore } from '@/plugins/layerVisibilityManager'
 
 // 创建一个独立的函数用于提供 ThematicLayer 服务
 export const useThematicLayerProvider = () => {
   const { map } = inject('$scene_map', {});
+
+  const layerStore = useLayerStore()
 
   if (!map) {
     console.warn('地图实例未找到，确保已在父组件中注入 $scene_map');
@@ -246,15 +248,16 @@ export const useThematicLayerProvider = () => {
           features: featuresWithIds
         });
 
-        const { sourceId, ...otherParams } = layerParams;
-        const layerIds = Object.values(otherParams)
-        for (let el of layerIds) {
-          map.setLayoutProperty(el, 'visibility', 'visible');
-        }
+        // const { sourceId, ...otherParams } = layerParams;
+        // const layerIds = Object.values(otherParams)
+        // for (let el of layerIds) {
+        //   map.setLayoutProperty(el, 'visibility', 'visible');
+        // }
 
         // map.setLayoutProperty(SOURCE_ID, 'visibility', 'visible');
 
       }
+      layerStore.showAll()
       return true;
     } else {
       console.error('无法更新专题图层数据: 未获取到有效数据');

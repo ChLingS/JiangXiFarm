@@ -4,9 +4,16 @@
       <div class="header-title">
         保单列表
       </div>
-      <div class="collapse-icon">
-        <i :class="['iconfont', isCollapsed ? 'icon-zhankai' : 'icon-shouqi']" @click="isCollapsed = !isCollapsed;"></i>
+      <div class="icons">
+        <div class="icon-update">
+          <i class="iconfont icon-shuaxin" @click="fetchOriginalData" title="刷新数据"></i>
+        </div>
+        <div class="collapse-icon">
+          <i :class="['iconfont', isCollapsed ? 'icon-zhankai' : 'icon-shouqi']"
+            @click="isCollapsed = !isCollapsed;"></i>
+        </div>
       </div>
+
     </div>
 
     <transition name="slide-fade">
@@ -72,6 +79,29 @@ const policyList = ref([]);
 
 // 当前行政区
 const areaMgr = inject('areaManager')
+// 刷新数据
+async function fetchOriginalData() {
+  const response = await apiRegistry.execute('getContractedListByAreaManager', areaMgr)
+  if (response && response.success) {
+    // 获取分页信息
+    const pagination = response.data.pagination;
+    totalItems.value = pagination.total;
+    totalPages.value = pagination.total_pages;
+
+    // 处理数据列表 - 根据实际接口字段调整
+    const dataList = response.data.data.map(el => ({
+      id: el.gid || el.id,
+      insuredName: el.xm, // 被保险人姓名
+      insuranceType: el.zw, // 作物类型
+      area: el.total_area, // 面积
+      village: el.cun, // 村
+      // 保留原始数据，便于后续使用
+      originalData: el
+    }));
+    policyList.value = dataList;
+  }
+
+}
 
 // 数据获取逻辑
 const fetchPolicyData = async () => {
@@ -123,7 +153,7 @@ const fetchPolicyData = async () => {
         id: el.gid || el.id,
         insuredName: el.xm, // 被保险人姓名
         insuranceType: el.zw, // 作物类型
-        area: el.area, // 面积
+        area: el.total_area, // 面积
         village: el.cun, // 村
         // 保留原始数据，便于后续使用
         originalData: el
@@ -166,6 +196,10 @@ onMounted(() => {
 
 // 过滤后的保单列表
 const filteredPolicyList = computed(() => {
+  // console.log('policyList', policyList.value);
+  for (const [index, item] of policyList.value.entries()) {
+    item.id = `${item.id}-${index}`;
+  }
   return policyList.value;
 });
 
@@ -302,6 +336,28 @@ const formatCurrency = (value) => {
   font-size: 16px;
   color: #fff;
   letter-spacing: 1px;
+}
+
+.icons {
+  display: flex;
+  direction: row;
+  gap: 12px;
+}
+
+.icon-update {
+  color: #409cff;
+  font-size: 18px;
+  transition: transform 0.3s ease, color 0.3s ease;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-update:hover {
+  background: rgba(64, 156, 255, 0.1);
+  transform: scale(1.1);
 }
 
 .collapse-icon {

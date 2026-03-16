@@ -1,4 +1,5 @@
 import { inject } from "vue";
+import { useLayerStore } from '@/plugins/layerVisibilityManager'
 
 /**
  * 管理地图图层点击事件的Hook
@@ -9,6 +10,7 @@ import { inject } from "vue";
 export default (areaMgr, thematicLayers, baseLayerUpDate, thematicLayerUpDate,
   setHighlight) => {
   const { map } = inject('$scene_map');
+  const layerStore = useLayerStore()
 
   // 防止并发点击导致的竞争条件
   let isProcessing = false;
@@ -48,14 +50,15 @@ export default (areaMgr, thematicLayers, baseLayerUpDate, thematicLayerUpDate,
           // 点击空白处，触发边界上升事件
           if (areaMgr.getLength() > 1) {
             console.log("上升")
-            thematicLayers.forEach(layer => {
-              const { sourceId, ...otherParams } = layer.layerParams;
-              const layerIds = Object.values(otherParams)
-              for (let el of layerIds) {
-                console.log("隐藏", el)
-                map.setLayoutProperty(el, 'visibility', 'none');
-              }
-            });
+            // thematicLayers.forEach(layer => {
+            //   const { sourceId, ...otherParams } = layer.layerParams;
+            //   const layerIds = Object.values(otherParams)
+            //   for (let el of layerIds) {
+            //     console.log("隐藏", el)
+            //     map.setLayoutProperty(el, 'visibility', 'none');
+            //   }
+            // });
+            layerStore.hideAllThematicLayers();
             await areaMgr.popLast();
             await baseLayerUpDate(areaMgr.toNames());
           }

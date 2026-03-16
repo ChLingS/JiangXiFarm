@@ -2,6 +2,7 @@
  * 圖層狀態管理：載入 layerConfig.json 並提供全域圖層配置與查詢方法
  */
 
+
 // --------------- 型別定義 ---------------
 
 /** 圖層參數（Mapbox source/layer id） */
@@ -80,6 +81,13 @@ export function getThematicLayers(): LayerConfigItem[] {
 }
 
 /**
+ * 取得所有专题图层的id列表（按 zIndex 排序）
+ */
+export function getThematicLayerIds(): string[] {
+  return getThematicLayers().map(layer => layer.id)
+}
+
+/**
  * 依 apiName 取得圖層
  */
 export function getLayerByApiName(apiName: string): LayerConfigItem | undefined {
@@ -93,6 +101,7 @@ export default {
   layers,
   getLayerById,
   getBaseLayer,
+  getThematicLayerIds,
   getThematicLayers,
   getLayerByApiName,
 }

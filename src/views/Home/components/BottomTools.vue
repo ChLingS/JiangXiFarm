@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, inject } from 'vue'
+import { ref, defineEmits, inject, computed } from 'vue'
 import Footer from '@/components/Footer.vue';
 
 const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
@@ -45,32 +45,59 @@ const emit = defineEmits(["layerSelectStatus", "changedInterface"]);
 /** @type {import('@/plugins/layerStatusManager').default} */
 const layers = inject('layers');
 
-function transformLayerConfig(thematicLayers) {
-  return thematicLayers.map(layer => {
-    // 提取除了sourceId之外的layerParams属性值
-    const { sourceId, ...otherParams } = layer.layerParams;
-      const values = Object.values(otherParams);
+import { useLayerStore } from '@/plugins/layerVisibilityManager'
+const layerStore = useLayerStore()
 
-      // 用下划线连接
-      const id = values.join('_');
-
-      return {
-        id,
-        label: layer.label,
-        checked: true
-      };
-    });
+const transformLayerConfig = (thematicLayers) => {
+  return thematicLayers.map(layer => ({
+    id: layer.id,
+    label: layer.label,
+    checked: computed({
+      get() {
+        return layerStore ? layerStore.isVisible(layer.id) : true
+      },
+      set(newValue) {
+        if (layerStore) {
+          // 根据新值调用相应的store方法
+          if (newValue) {
+            layerStore.show(layer.id)
+          } else {
+            layerStore.hide(layer.id)
+          }
+        }
+      }
+    })
+  }))
 }
 
-// 使用示例
-console.log('Transformed Layer Config:', layers.layerConfig);
 const layerSelect = ref(transformLayerConfig(layers.getThematicLayers()));
 
 let showLayerPanel = ref(false)
 
 function onLayerChange(layer) {
-  emit('layerSelectStatus', layer)
+  // 同步到layerVisibilityManager
+  if (!layerStore) { return; }
+
+  if (layer.checked) {
+    layerStore.show(layer.id)
+  } else {
+    layerStore.hide(layer.id)
+  }
+
+
+  // emit('layerSelectStatus', layer)
 }
+
+// 监听layerStore变化，保持layerSelect同步（可选，视需求而定）
+// 如果layerStore是响应式对象，可以用watch同步
+// import { watch } from 'vue'
+// watch(() => layerStore.layerVisibleMap, (newMap) => {
+//   layerSelect.value.forEach(item => {
+//     if (newMap[item.id] !== undefined) {
+//       item.checked = newMap[item.id];
+//     }
+//   });
+// }, { deep: true })
 
 function changedInterface(interfaceId) {
   emit('changedInterface', interfaceId)
