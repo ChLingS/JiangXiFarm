@@ -101,9 +101,13 @@
       </div>
       <!-- 操作按钮（只保留编辑按钮） -->
       <div v-if="featureProperties" class="action-buttons">
-        <button class="btn primary" @click="handleEdit">
+          <!-- <button class="btn primary" @click="handleEdit">
+            <span class="btn-icon">✏️</span>
+            编辑信息
+          </button> -->
+                <button class="btn primary" @click="handleEdit">
           <span class="btn-icon">✏️</span>
-          编辑信息
+          地块出错
         </button>
       </div>
     </div>
@@ -533,7 +537,7 @@ onUnmounted(() => {
 /* 操作按钮 */
 .action-buttons {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
   margin-top: 8px;
   padding-top: 16px;

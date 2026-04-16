@@ -30,6 +30,9 @@ export const useThematicLayerProvider = () => {
     }
   };
 
+  
+
+
   /**
    * 通用高亮控制函数
    * @param {string|number} identifier - 要素标识符（ID或BDH值）

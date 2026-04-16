@@ -31,6 +31,19 @@
           </button>
           <p>承保业务</p>
         </div>
+        <div class="item">
+          <div class="layer-panel-container" v-if="showBoxPanel">
+            <div class="panel">
+              <div v-for="el in boxSelect" :key="el.id" class="panel-item">
+                <el-checkbox>{{ el.label }}</el-checkbox>
+              </div>
+            </div>
+          </div>
+          <button class="toggle-btn" @click="showBoxPanel = !showBoxPanel">
+            <i class="iconfont icon-yekuoyewu"></i>
+          </button>
+          <p>其他工具</p>
+        </div>
       </div>
     </template>
   </Footer>
@@ -83,25 +96,23 @@ function onLayerChange(layer) {
   } else {
     layerStore.hide(layer.id)
   }
-
-
   // emit('layerSelectStatus', layer)
 }
-
-// 监听layerStore变化，保持layerSelect同步（可选，视需求而定）
-// 如果layerStore是响应式对象，可以用watch同步
-// import { watch } from 'vue'
-// watch(() => layerStore.layerVisibleMap, (newMap) => {
-//   layerSelect.value.forEach(item => {
-//     if (newMap[item.id] !== undefined) {
-//       item.checked = newMap[item.id];
-//     }
-//   });
-// }, { deep: true })
 
 function changedInterface(interfaceId) {
   emit('changedInterface', interfaceId)
 }
+
+// boxSelect部分
+let showBoxPanel = ref(false)
+
+const boxSelect = ref([
+  {
+    id: 'boxSelect3',
+    label: '涨势工具'
+  }
+])
+
 </script>
 
 <style scoped>

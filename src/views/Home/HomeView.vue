@@ -8,7 +8,7 @@
 <template>
   <Header></Header>
   <div>
-
+    <div class="time-line"></div>
     <MapControl />
     <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" :transConfig="layers"/>
 
