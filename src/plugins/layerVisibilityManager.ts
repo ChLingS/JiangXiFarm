@@ -43,10 +43,10 @@ export const useLayerStore = defineStore('layer', () => {
     Object.entries(layerVisibility.value).forEach(([layerId, visible]) => {
       const mapboxLayerIds = getMapboxLayerIds(layerId)
       mapboxLayerIds.forEach(mbLayerId => {
-        try {
+        if (mapInstance.getLayer(mbLayerId)) {
           mapInstance.setLayoutProperty(mbLayerId, 'visibility', visible ? 'visible' : 'none')
-        } catch (e) {
-          // 图层不存在时忽略
+        } else {
+          console.warn(`Mapbox layer with id "${mbLayerId}" not found for business layer "${layerId}"`)
         }
       })
     })

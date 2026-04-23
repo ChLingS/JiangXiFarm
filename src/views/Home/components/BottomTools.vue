@@ -32,14 +32,7 @@
           <p>承保业务</p>
         </div>
         <div class="item">
-          <div class="layer-panel-container" v-if="showBoxPanel">
-            <div class="panel">
-              <div v-for="el in boxSelect" :key="el.id" class="panel-item">
-                <el-checkbox>{{ el.label }}</el-checkbox>
-              </div>
-            </div>
-          </div>
-          <button class="toggle-btn" @click="showBoxPanel = !showBoxPanel">
+          <button class="toggle-btn" @click="changedInterface(3)">
             <i class="iconfont icon-yekuoyewu"></i>
           </button>
           <p>其他工具</p>

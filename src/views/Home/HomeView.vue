@@ -8,9 +8,10 @@
 <template>
   <Header></Header>
   <div>
-    <div class="time-line"></div>
+
     <MapControl />
-    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus" :transConfig="layers"/>
+    <BottomTools @changed-interface="handleComponentToggle" @layer-select-status="handleLayerStatus"
+      :transConfig="layers" />
 
     <component :is="activeComponent" v-if="activeComponent" />
 
@@ -24,18 +25,13 @@ import { ref, onMounted, watch, inject, shallowRef, onUnmounted, provide } from 
 
 const { map } = inject('$scene_map')
 
-import { useLayerStore } from '@/plugins/layerVisibilityManager'
-const layerStore = useLayerStore()
-layerStore.setMapInstance(map)
-layerStore.initialize()
-
-
 import BottomTools from './components/BottomTools.vue';
 import MapControl from './components/MapControl.vue';
 import ContractLandDetail from './components/ContractLandDetail.vue'
 import Header from './components/Header.vue'
 import G2Charts from './components/G2Charts.vue';
 import BusinessOverview from './components/BusinessOverview.vue';
+import RisingMonitor from './components/RisingMonitor.vue';
 
 
 import useBoundaryLayer from '@/Hooks/MapBoundaryManager';
@@ -48,6 +44,12 @@ provide('setHighlight', setHighlight)
 
 import layers from '@/plugins/layerStatusManager'
 // console.log('layers', layers);
+
+import { useLayerStore } from '@/plugins/layerVisibilityManager'
+const layerStore = useLayerStore()
+layerStore.setMapInstance(map)
+layerStore.initialize()
+
 
 
 provide('layers', layers);
@@ -80,11 +82,11 @@ for (const layer of thematicLayer) {
   loadThematicLayer(layerParams, layerStyle)
 }
 // 处理图层点击事件
-const {initMapClickListener,
-      cleanupMapClickListener} = clickController(areaMgr, thematicLayer,
-                                                updateBoundaryLayerData,
-                                                updateThematicLayerData,
-                                                setHighlight);
+const { initMapClickListener,
+  cleanupMapClickListener } = clickController(areaMgr, thematicLayer,
+    updateBoundaryLayerData,
+    updateThematicLayerData,
+    setHighlight);
 
 
 
@@ -115,12 +117,12 @@ const handleLayerStatus = (changedLayer) => {
   }
 }
 
-
 // 切换组件
 const components = {
   2: BusinessOverview,
   // 未来扩展
   1: G2Charts,
+  3: RisingMonitor,
 }
 const activeComponent = shallowRef(components[1])
 

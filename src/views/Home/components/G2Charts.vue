@@ -69,7 +69,7 @@
                 <div class="statistic-title">总面积</div>
                 <div class="statistic-value">45,230 <span class="statistic-suffix">km²</span></div>
       </div>
-              
+
             </el-space>
           </el-card>
         </div>
@@ -181,14 +181,6 @@ const barConfig = computed(() => {
     },
   };
 });
-
-// Element Plus 进度条颜色配置
-const customColors = (percentage) => {
-  if (percentage < 50) {
-    return '#00b7ff';
-  }
-  return '#00d4ff';
-};
 
 
 // 侧边栏折叠状态 - 默认展开
